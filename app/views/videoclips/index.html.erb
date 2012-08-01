@@ -1,0 +1,50 @@
+<h1> RITES Video Analysis Tool </h1>
+
+<div>
+<p>
+  Please note that uploading a videoclip may take a long time depending on network speed and current conditions.
+</p>
+<p>
+  Once a video clip has been uploaded, it must be processed before the individual frames can be viewed - if an uploaded video needs to be processed, a process link will be in it's row in the table below and the view frames link will be unavailable
+</p>
+</div>
+
+<h3>videoclips</h3>
+
+<div>
+  <table>
+    <tr>
+      <th>Name</th>
+			<th>FPS</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+
+  <% @videoclips.each do |videoclip| %>
+    <tr>
+      <td><%= videoclip.name %></td>
+			<td><%= videoclip.fpss %></td>
+      <td><%= if not (videoclip.is_processed == 1)
+                link_to 'Process', create_frames_videoclip_path(videoclip)
+              end %>
+			</td>
+      <td><%= if videoclip.is_processed
+                link_to 'View Frames', "videoclips/" + videoclip.id.to_s + "/clicker"
+              end %>
+			</td>
+      <td><%= if not (videoclip._is_removed == 1)
+								link_to 'Remove',  videoclip, :confirm => 'Are you sure?', :method => :delete 
+							end%>
+			</td>
+    </tr>
+  <% end %>
+	<tr>
+		<td colspan=5 style="background: #d0d0d0">
+    <b><%= link_to 'Upload a New Videoclip', new_videoclip_path %></b>
+		</td>
+	</tr>
+  </table>
+</div>
+
+

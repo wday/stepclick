@@ -1,0 +1,4 @@
+. figure out correct route for create_frames so that it goes back to video clips once the process finishes
+. set up remove to actually clean up the file system, although perhaps this would just be a rake task that removes things periodically
+. make upload or remove require a password
+

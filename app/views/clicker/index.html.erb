@@ -1,0 +1,81 @@
+<script>
+function zeroFill( number, width )
+{
+  width -= number.toString().length;
+  if ( width > 0 )
+  {
+    return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+  }
+  return number + ""; // always return a string
+}
+</script>
+<% 
+  clip = Videoclip.find(params[:videoclip_id]) 
+  framenum_min = Frame.where('frames.videoclip_id = ?', clip.id).order('frames.framenum ASC').first.framenum
+  framenum_max = Frame.where('frames.videoclip_id = ?', clip.id).order('frames.framenum DESC').first.framenum
+  frame = Frame.where(:framenum => framenum_min).first
+  clip_path = File.join("../../../","data","video",clip.path)
+  frame_path = File.join("frame", "%04d.jpg" % frame.framenum)
+  imgurl = File.join(clip_path, frame_path)
+
+	fps = clip.fpss.to_f
+%>
+<canvas id="imgbox" width="640" height="480"></canvas>
+
+<script type="text/javascript">
+  var c = document.getElementById("imgbox");
+  var ctx = c.getContext("2d");
+
+  var framenum_min = <%= framenum_min %>;
+  var framenum_max = <%= framenum_max %>;
+  var fps = <%= fps %>;
+
+  var cur_framenum = framenum_min;
+
+  function load_frame(framenum) {
+    var clip_path = "../../../data/video/<%= clip.path %>";
+    var frame_path = "frame/" + zeroFill( framenum, 4 ) + ".jpg";
+    var imgurl = clip_path + "/" + frame_path;
+
+    var img = new Image();
+    img.onload = function() {
+      var aspect = this.height / this.width;
+      var ctx_aspect = c.height / c.width;
+      
+      // if this img is shorter, fit the width and shrink the height
+      if (aspect < ctx_aspect) {
+        ctx.drawImage(this,0,0,c.width,c.height * aspect/ctx_aspect);
+      } else {
+        ctx.drawImage(this,0,0,c.width*aspect/ctx_aspect, c.height);
+      }
+      var disp = document.getElementById("display-time");
+      var curtime = (cur_framenum-1)/fps;
+      disp.innerHTML = "<b> Frame = " + (cur_framenum-1) + ", Time = " + curtime.toFixed(3) + " (s) </b";
+    } 
+    cur_framenum = framenum;
+    img.src = imgurl;
+  }
+
+  function load_previous_frame() {
+    if (cur_framenum > framenum_min) {
+      load_frame(cur_framenum-1);
+    }
+  }
+
+  function load_next_frame() {
+    if (cur_framenum < framenum_max ) {
+      load_frame(cur_framenum+1);
+    }
+  }
+
+  window.onload = function() {
+    load_frame(framenum_min);
+  }
+
+</script>
+<br />
+<span id="display-time"></span>&nbsp;|&nbsp;<button onclick="load_previous_frame();">previous</button>&nbsp;|&nbsp;<button onclick="load_next_frame();">next</button>
+<br />
+
+<%= link_to 'Video Clips', videoclips_path %>
+

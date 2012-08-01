@@ -1,0 +1,15 @@
+<h2> Here be the frames </h2>
+
+<table>
+  <% @frames.each do |frame| %>
+    <tr>
+      <td><a href=""><%="%04d.jpg" % frame.framenum%></a></td>
+      <!-- <td> 
+        <%= #link_to "#{frame.framenum}", videoclip_frames_url(params[:videoclip_id],frame.framenum)  %>
+      </td> --!>
+    </tr>
+  <% end %>
+</table>
+
+<%= link_to 'Video Clips', videoclips_path %>
+

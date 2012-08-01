@@ -1,0 +1,44 @@
+<% 
+  logger.info "[Frames#show] #{params[:videoclip_id]}"
+  clip = Videoclip.find(params[:videoclip_id]) 
+  frame = Frame.where(:framenum => params[:id]).first
+  clip_path = File.join("../../../","data","video",clip.path)
+  frame_path = File.join("frame", "%04d.jpg" % frame.framenum)
+  imgurl = File.join(clip_path, frame_path)
+
+	fps = clip.fpss.to_f
+%>
+<canvas id="imgbox" width="640" height="480"></canvas>
+
+<script type="text/javascript">
+ var c = document.getElementById("imgbox");
+ var ctx = c.getContext("2d");
+ 
+ ctx.fillStyle = "#000000";
+
+ img = new Image();
+ img.onload = function() {
+    ctx.drawImage(this,0,0,canvas.width,canvas.height);
+  }
+  img.src = '<%= imgurl =%>';
+</script>
+<b>T = <%= "%3.3f" % ((frame.framenum - 1)* (1.0/fps)) %> s</b>&nbsp;|&nbsp;
+<% 
+  prev_framenum = frame.previous_framenum(clip)
+  if prev_framenum %>
+    <a href="<%=prev_framenum%>">Previous</a>&nbsp;|&nbsp;
+  <% else %>
+    Previous &nbsp;|&nbsp;
+  <% end %>
+
+<% 
+  next_framenum = frame.next_framenum(clip)
+  if next_framenum %>
+    <a href="<%=next_framenum%>">Next</a>
+  <% else %>
+   Next 
+  <% end %>
+
+<br />
+<%= link_to 'Video Clips', videoclips_path %>
+

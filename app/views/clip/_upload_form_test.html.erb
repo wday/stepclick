@@ -1,0 +1,13 @@
+<!-- multipart to allow for uploading of binary data --!>
+<%= form_for(@clip) do |f| %>
+
+  <div class="field">
+    <%= f.label :name %><br />
+    <%= f.text_field :name %><br />
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+
+<% end %>

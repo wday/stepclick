@@ -1,0 +1,15 @@
+<% 
+  logger.info "[Frames#show] #{params[:videoclip_id]}"
+  clip = Videoclip.find(params[:videoclip_id]) 
+  frame = Frame.where(:framenum => params[:id]).first
+  clip_path = File.join("../../../","data","video",clip.path)
+  frame_path = File.join("frame", "%04d.jpg" % frame.framenum)
+  imgurl = File.join(clip_path, frame_path)
+%>
+<img src="<%= imgurl %>" />
+<br />
+<%= link_to 'Previous', frame.previous(clip) %> |
+<%= link_to 'Next', frame.next(clip) %>
+<br />
+<%= link_to 'Video Clips', videoclips_path %>
+

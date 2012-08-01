@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @videoclip.name %>
+</p>
+
+<p>
+  <b>Path:</b>
+  <%= @videoclip.path %>
+</p>
+
+<p>
+  <b>Frames:</b>
+  <%= @videoclip.frames %>
+</p>
+
+<p>
+  <b>Width:</b>
+  <%= @videoclip.width %>
+</p>
+
+<p>
+  <b>Height:</b>
+  <%= @videoclip.height %>
+</p>
+
+
+<%= link_to 'Edit', edit_videoclip_path(@videoclip) %> |
+<%= link_to 'Back', videoclips_path %>

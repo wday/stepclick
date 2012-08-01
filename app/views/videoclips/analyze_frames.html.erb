@@ -1,0 +1,9 @@
+<h2> here we display a bunch of frames for a clip </h2>
+
+<table>
+<% Frame.where(:videoclip_id => params[:videoclip_id]).each do |frame| %>
+<tr>
+  <td><%= frame.framenum %></td>
+</td>
+<% end %>
+</table>

@@ -1,0 +1,25 @@
+<h2> Video frames </h2> 
+
+<% 
+	videoclip = Videoclip.find(@frames.first.videoclip_id) 
+	fps = videoclip.fpss.to_f
+%>
+<table>
+	<tr>
+		<th>
+			Frame #
+		</th>
+		<th>
+			Time (s)
+		</th>
+	</tr>
+  <% @frames.each do |frame| %>
+    <tr>
+      <td><a href="frames/<%=frame.framenum%>"><%=frame.framenum%></a></td>
+			<td><%= "%3.3f" % ((frame.framenum - 1) * (1.0/fps)) %></td>
+    </tr>
+  <% end %>
+</table>
+
+<%= link_to 'Video Clips', videoclips_path %>
+
