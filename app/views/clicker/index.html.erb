@@ -1,15 +1,13 @@
-<script>
-function zeroFill( number, width )
-{
-  width -= number.toString().length;
-  if ( width > 0 )
-  {
-    return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
-  }
-  return number + ""; // always return a string
+<style>
+td {
+  vertical-align: top;
 }
-</script>
-<% 
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.2/jquery.dataTables.min.js"></script>
+
+<% # initialize the clicker state
   clip = Videoclip.find(params[:videoclip_id]) 
   framenum_min = Frame.where('frames.videoclip_id = ?', clip.id).order('frames.framenum ASC').first.framenum
   framenum_max = Frame.where('frames.videoclip_id = ?', clip.id).order('frames.framenum DESC').first.framenum
@@ -20,62 +18,276 @@ function zeroFill( number, width )
 
 	fps = clip.fpss.to_f
 %>
-<canvas id="imgbox" width="640" height="480"></canvas>
+<table>
+  <tr>
+    <td id="left-col">
+      <b>Video Parameters:</b><br/>
+      FPS: <input id='txt-fps' type=textbox size=3></input></br />
+      <br />
+      <i>Scale</i><br/>
+      <button id='btn-measure-scale' onclick="start_measuring();">start</button><br />
+      Pixels: <input id='scale-distance-px' type=textbox size=2 value=""></input><br />
+      Distance: <input id='scale-distance-known' type=textbox size=3 value=1></input><br />
+      Units: <input id='scale-distance-units' type=textbox size=5 value="m"></input><br />
+      <button id='btn-set-scale' onclick="set_scale();">set scale</button><br />
+      <hr>
+      <b>Video Status:</b><br/>
+      <span id="display-time"></span><br/>
+      <hr>
+      <b>Video Control:</b><br />
+      <i>Frame skip:</i> <input size=2 id="skip-distance" type=textbox value=1>  </input><br/>
+       <button onclick="load_start_frame();">start</button><br/>
+      <button onclick="load_previous_frame();">previous</button><br/>
+      <button onclick="load_next_frame();">next</button><br />
+  </td>
+    <td id="right-col"> <canvas id="imgbox" width="640" height="480"></canvas> </td>
+  </tr>
+</table>
+    
+<div id="data-table-owner">
+  <table id="data-table"> </table> 
+</div>
+
+<%= link_to 'Video Clips', videoclips_path %>
 
 <script type="text/javascript">
+function zeroFill( number, width )
+{
+width -= number.toString().length;
+if ( width > 0 )
+{
+  return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+}
+return number + ""; // always return a string
+}
+var c = document.getElementById("imgbox");
+var ctx = c.getContext("2d");
+
+var framenum_min = <%= framenum_min %>;
+var framenum_max = <%= framenum_max %>;
+var initial_fps = <%= fps %>;
+
+var is_measuring = 0;
+
+var scale_start_point = null;
+var scale_end_point = null;
+
+function start_measuring() {
+  is_measuring = 1;
+  scale_start_point = null;
+  scale_end_point = null;
+  $('#btn-measure-scale').html("click two points");
+}
+
+function stop_measuring() {
+  $('#btn-measure-scale').html("start");
+  is_measuring = 0;
+} 
+
+var cur_framenum = framenum_min;
+
+function DataPoint(fnum, ts, px_x, px_y) {
+  this.fnum = fnum;
+  this.ts = ts;
+  this.px_x = px_x;
+  this.px_y = px_y;
+}
+
+function fps() {
+  return $('#txt-fps').val();
+}
+
+DataPoint.prototype.px_toHtml = function() {
+  return "T (s) = " + this.ts.toFixed(2) + ", x (px) = " + Math.floor(this.px_x) + ", y (px) = " + Math.floor(this.px_y);
+}
+
+DataPoint.prototype.px_toTableRow = function() {
+  return this.toTableRow(1,1);
+}
+
+DataPoint.prototype.toTableRow = function() {
+  return this.toTableRow(scale_known_distance, scale_length_px);
+}
+
+DataPoint.prototype.toTableRow = function(measured_dx, screen_px) {
+  return "<tr><td>" + this.ts.toFixed(2) + "</td><td>" + (this.px_x * measured_dx / screen_px).toFixed(2) + "</td><td>" + (this.px_y * measured_dx / screen_px).toFixed(2) + "</td></tr>";
+}
+
+DataPoint.prototype.distance_to = function(B) {
+  var dx = this.px_x - B.px_x;
+  var dy = this.px_y - B.px_y;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+var points = Array();
+
+function reset_data() {
+}
+
+function load_frame(framenum) {
+  var clip_path = "../../../data/video/<%= clip.path %>";
+  var frame_path = "frame/" + zeroFill( framenum, 4 ) + ".jpg";
+  var imgurl = clip_path + "/" + frame_path;
+
+  var img = new Image();
+  img.onload = function() {
+    var aspect = this.height / this.width;
+    var ctx_aspect = c.height / c.width;
+    
+    // if this img is shorter, fit the width and shrink the height
+    if (aspect < ctx_aspect) {
+      ctx.drawImage(this,0,0,c.width,c.height * aspect/ctx_aspect);
+    } else {
+      ctx.drawImage(this,0,0,c.width*aspect/ctx_aspect, c.height);
+    }
+    var disp = document.getElementById("display-time");
+    var curtime = (cur_framenum-1)/fps();
+    disp.innerHTML = "Frame = " + (cur_framenum-1) + "<br />Time = " + curtime.toFixed(3) + " (s)";
+    render_points();
+  } 
+  cur_framenum = framenum;
+  img.src = imgurl;
+
+}
+
+function render_points() {
   var c = document.getElementById("imgbox");
   var ctx = c.getContext("2d");
 
-  var framenum_min = <%= framenum_min %>;
-  var framenum_max = <%= framenum_max %>;
-  var fps = <%= fps %>;
+  ctx.fillStyle = "yellow";
 
-  var cur_framenum = framenum_min;
+  $(points).each(function() {
+    ctx.fillRect(this.px_x-1, this.px_y-1, 3, 3);
+  });
 
-  function load_frame(framenum) {
-    var clip_path = "../../../data/video/<%= clip.path %>";
-    var frame_path = "frame/" + zeroFill( framenum, 4 ) + ".jpg";
-    var imgurl = clip_path + "/" + frame_path;
+  ctx.fillStyle = "red";
 
-    var img = new Image();
-    img.onload = function() {
-      var aspect = this.height / this.width;
-      var ctx_aspect = c.height / c.width;
-      
-      // if this img is shorter, fit the width and shrink the height
-      if (aspect < ctx_aspect) {
-        ctx.drawImage(this,0,0,c.width,c.height * aspect/ctx_aspect);
+  if( scale_start_point ) {
+    ctx.fillRect(scale_start_point.px_x-1, scale_start_point.px_y-1,3,3);
+  }
+
+  if( scale_end_point ) {
+    ctx.fillRect(scale_end_point.px_x-1, scale_end_point.px_y-1,3,3);
+  }
+
+  if( scale_start_point && scale_end_point ) {
+    ctx.strokeStyle = "green";
+    ctx.lineWidth = 2;
+    ctx.beginPath()
+    ctx.moveTo( scale_start_point.px_x, scale_start_point.px_y );
+    ctx.lineTo( scale_end_point.px_x, scale_end_point.px_y );
+    ctx.stroke();
+  }
+
+}
+
+function load_start_frame() {
+  load_frame(framenum_min);
+}
+
+function load_previous_frame() {
+  var frame_skip = Number($('#skip-distance').val());
+  if (cur_framenum - frame_skip >= framenum_min) {
+    load_frame(cur_framenum - frame_skip);
+  }
+}
+
+function has_previous_frame() {
+  var frame_skip = Number($('#skip-distance').val());
+  return cur_framenum - frame_skip >= framenum_min;
+}
+
+function load_next_frame() {
+  var frame_skip = Number($('#skip-distance').val());
+  if (cur_framenum + frame_skip <= framenum_max ) {
+    load_frame(cur_framenum + frame_skip);
+  }
+}
+
+function has_next_frame() {
+  var frame_skip = Number($('#skip-distance').val());
+  return cur_framenum + frame_skip <= framenum_max;
+} 
+
+var scale_length_px = 1;
+function set_scale_length(l) {
+  scale_length_px = l;
+  $('#scale-distance-px').val(Math.round(l));
+}
+
+var scale_known_distance = 1;
+var scale_known_units = "px";
+function set_scale() {
+  scale_length_px = Number($('#scale-distance-px').val());
+  scale_known_distance = Number($('#scale-distance-known').val());
+  scale_known_units = $('#scale-distance-units').val();
+  reset_data_table();
+}
+
+function reset_data_table() {
+  var t = $('#data-table');
+
+  t.html('<thead><tr><td>T (s)</td><td>X (' + scale_known_units + ')</td><td>Y (' + scale_known_units + ')</td></tr></thead>');
+
+  t.append('<tbody>');
+  $(points).each(
+    function() {
+      t.append(this.toTableRow(scale_known_distance, scale_length_px));
+    }
+  );
+  t.append('</tbody>');
+
+  $("#data-table").dataTable();
+}
+
+var is_recording = 1;
+
+function start_recording() {
+  points = new Array();
+  is_recording = 1;
+  // TODO reset canvas
+}
+
+$(document).ready(function() {
+  $("#txt-fps").val(initial_fps);
+  $("#imgbox").click( 
+    function(e) {
+      var x = e.pageX - $('#imgbox').offset().left;
+      var y = e.pageY - $('#imgbox').offset().top;
+      if (is_measuring) {
+        if (scale_start_point == null) {
+          scale_start_point = new DataPoint(0,0,x,y);
+          render_points();
+        } else if (scale_end_point == null) {
+          scale_end_point = new DataPoint(0,0,x,y);
+          render_points();
+          set_scale_length(scale_end_point.distance_to(scale_start_point));
+          stop_measuring();
+        }
+         
       } else {
-        ctx.drawImage(this,0,0,c.width*aspect/ctx_aspect, c.height);
+        if (is_recording) {
+          var curtime = (cur_framenum-1)/fps();
+          var pt = new DataPoint(cur_framenum,curtime,x,y);
+          points.push(pt);
+          $("#data-table").append(pt.toTableRow(scale_known_distance, scale_length_px));
+          if (has_next_frame()) {
+            load_next_frame();
+          } else {
+            is_recording = 0;
+          }
+        }
       }
-      var disp = document.getElementById("display-time");
-      var curtime = (cur_framenum-1)/fps;
-      disp.innerHTML = "<b> Frame = " + (cur_framenum-1) + ", Time = " + curtime.toFixed(3) + " (s) </b";
-    } 
-    cur_framenum = framenum;
-    img.src = imgurl;
-  }
-
-  function load_previous_frame() {
-    if (cur_framenum > framenum_min) {
-      load_frame(cur_framenum-1);
     }
-  }
+  );
 
-  function load_next_frame() {
-    if (cur_framenum < framenum_max ) {
-      load_frame(cur_framenum+1);
-    }
-  }
+  start_recording();
 
-  window.onload = function() {
-    load_frame(framenum_min);
-  }
+  reset_data_table();
+    
+  load_frame(framenum_min);
+});
 
 </script>
-<br />
-<span id="display-time"></span>&nbsp;|&nbsp;<button onclick="load_previous_frame();">previous</button>&nbsp;|&nbsp;<button onclick="load_next_frame();">next</button>
-<br />
 
-<%= link_to 'Video Clips', videoclips_path %>
 
