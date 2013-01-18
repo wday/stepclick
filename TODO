@@ -1,3 +1,30 @@
+[2013-01-17] Refactoring the data model
+
+Data are now owned by an experiment thus we can do
+
+	e = Experiment.find(7) # find experiment with experiment_id = 7
+	d = Datum.new()
+	d.experiment = e
+	d.save
+	d = Datum.new()
+	d.experiment = e
+	d.save
+
+now for these we either look up all data for an experiment using the convenient
+
+	e = Experiment.find(7)
+	d = e.data
+
+and d will be an array containing data elements (datum objects) for the points associated with this experiment.
+
+This works because of two things. First, I added an experiment_id key to the data model; second, I indicated that an experiment "has_many data". It would be interesting to test what happens if I remove the "has_many data" aspect, but probably not worth exploring. Note that I also annotated Datum to "belong_to :experiment".
+
+The next step is to decide how to represent the actual data points. Probably most useful would be to store them
+scale independent, and the have the user create a scale model than can be used to generate a result set of scaled data (or perhaps this can be called an analyis model by applying the scale to the raw data).
+
+This should also deal with the annoying quirks around being able to create multiple views of the scale if one rescales. Now the user can create a scale model and there will be some view of the scale model rendered on top of the canvas.
+
+
 [2012-08-02] rescale images to a more reasonable size if 1080p video is uploaded
 . figure out correct route for create_frames so that it goes back to video clips once the process finishes
 . set up remove to actually clean up the file system, although perhaps this would just be a rake task that removes things periodically

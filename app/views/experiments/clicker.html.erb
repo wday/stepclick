@@ -49,15 +49,13 @@ h3 {
 </style>
 
 <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/themes/ui-lightness/jquery-ui.css" type="text/css" media="all">
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.2/jquery.dataTables.min.js"></script>
 
-<%= javascript_include_tag 'jquery.flot' %>
 <%= javascript_include_tag 'clicker' %>
 
 <% # initialize the clicker state
-  clip = Videoclip.find(params[:videoclip_id]) 
+  clip = @experiment.videoclip
   framenum_min = Frame.where('frames.videoclip_id = ?', clip.id).order('frames.framenum ASC').first.framenum
   framenum_max = Frame.where('frames.videoclip_id = ?', clip.id).order('frames.framenum DESC').first.framenum
   frame = Frame.where(:framenum => framenum_min).first
@@ -67,6 +65,7 @@ h3 {
 
 	fps = clip.fpss.to_f
 %>
+
 <div id="control-panel" class="ui-draggable ui-widget-content">
   <h3 class=ui-widget-header>Control</h3>
   <div id="control-panel-accordion">
@@ -79,19 +78,15 @@ h3 {
       <table style="margin-bottom: 1em">
         <tr><td colspan=2><button class="ui-widget ui-button" id='btn-measure-scale' onclick="start_measuring();">start measuring</button></td></tr>
         <tr>
-          <td>Pixels</td>
-          <td><input id='scale-distance-px' type=textbox size=2 value=""></input></td>
-        </tr>
-        <tr>
-          <td>Distance:</td>
-          <td><input id='scale-distance-known' type=textbox size=3 value=1></input></td>
+          <td>Length:</td>
+          <td><input id='scale-distance-known' type=textbox size=5 value=""></input></td>
         </tr>
         <tr>
           <td>Units:</td>
-          <td><input id='scale-distance-units' type=textbox size=5 value="m"></input></td>
+          <td><input id='scale-distance-units' type=textbox size=5 value=""></input></td>
         </tr>
         <tr>
-          <td colspan=2><button class="ui-widget ui-button" id='btn-set-scale' onclick="set_scale();">set scale</button></td>
+          <td colspan=2><button class="ui-widget ui-button" id='btn-set-scale' onclick="set_scale();">save and apply</button></td>
         </tr>
       </table>
     </div>
@@ -127,18 +122,17 @@ h3 {
   <canvas id="imgbox"></canvas> 
 </td>
 
-<script src="http://d3js.org/d3.v2.js"></script>
-    
 <script type="text/javascript">
-function zeroFill( number, width )
-{
-width -= number.toString().length;
-if ( width > 0 )
-{
-  return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+
+function zeroFill( number, width ) {
+  width -= number.toString().length;
+  if ( width > 0 )
+  {
+    return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+  }
+  return number + ""; // always return a string
 }
-return number + ""; // always return a string
-}
+
 var c = document.getElementById("imgbox");
 var ctx = c.getContext("2d");
 
@@ -150,6 +144,28 @@ var is_measuring = 0;
 
 var scale_start_point = null;
 var scale_end_point = null;
+
+var scale = {
+  x0: null,
+  y0: null,
+  x1: null,
+  y1: null,
+  length_known: null,
+  units: null
+}
+
+var cur_framenum = framenum_min;
+
+var points = Array();
+var imgwidth;
+var imgheight;
+
+var scale_length_px = 1;
+
+var scale_known_distance = 1;
+var scale_known_units = "px";
+
+var is_recording = 1;
 
 function start_measuring() {
   is_measuring = 1;
@@ -163,15 +179,9 @@ function stop_measuring() {
   is_measuring = 0;
 } 
 
-var cur_framenum = framenum_min;
-
 function fps() {
   return $('#txt-fps').val();
 }
-
-var points = Array();
-var imgwidth;
-var imgheight;
 
 function reset_data() {
 }
@@ -261,7 +271,8 @@ function render_points() {
 
 }
 
-function plot_d3_graph(data) {
+function plot_d3_graph(data) {}
+function plot_3d_graph() {
   var w = 300;
   var h = 300;
   var x = d3.scale.linear().domain([0, 30]).range([0, w]);
@@ -313,18 +324,32 @@ function has_next_frame() {
   return cur_framenum + frame_skip <= framenum_max;
 } 
 
-var scale_length_px = 1;
+
 function set_scale_length(l) {
   scale_length_px = l;
-  $('#scale-distance-px').val(Math.round(l));
 }
 
-var scale_known_distance = 1;
-var scale_known_units = "px";
 function set_scale() {
-  scale_length_px = Number($('#scale-distance-px').val());
+  scale_length_px      = scale_end_point.distance_to(scale_start_point);
   scale_known_distance = Number($('#scale-distance-known').val());
-  scale_known_units = $('#scale-distance-units').val();
+  scale_known_units    = $('#scale-distance-units').val();
+
+  $.post( 
+    "/experiments/" + <%= @experiment.id %> + "/set_scale/",
+    { scale: {
+        x0: scale_start_point.x,
+        y0: scale_start_point.y,
+        x1: scale_end_point.x,
+        y1: scale_end_point.y,
+        measured_length: scale_known_distance,
+        measured_units: scale_known_units
+      }
+    },
+    function (data) {
+      console.log("posted scale");
+    }
+  );
+
   reset_data_table();
 }
 
@@ -340,14 +365,9 @@ function reset_data_table() {
     }
   );
   t.append('</tbody>');
-
-//  $("#data-table").dataTable();
 }
 
-var is_recording = 1;
-
 function start_recording() {
-  points = new Array();
   is_recording = 1;
   // TODO reset canvas
 }
@@ -377,6 +397,20 @@ function click_handler(e) {
     console.log('recording normal click event');
     var curtime = (cur_framenum-1)/fps();
     var pt = new DataPoint(cur_framenum,curtime,xprime,yprime);
+    //$.post('/ajaxtest/123', function(data) {
+    //  console.log("returned from ajaxtest");
+    //});
+    $.post('/experiments/' + <%= @experiment.id %> + '/add_datum/',
+      { datum: { 
+          frame: cur_framenum,
+          time: curtime,
+          x: xprime,
+          y: yprime }
+      },
+      function(data) {
+        console.log('submitted datum: ' + data);
+      }
+    );
     points.push(pt);
     $("#data-table").append(pt.toTableRow(scale_known_distance, scale_length_px));
     if (has_next_frame()) {
@@ -420,6 +454,45 @@ $(document).ready(function() {
     click_handler(e); 
   });
 
+  $.ajax( {
+    type: "GET",
+    dataType: "json",
+    url: "/experiments/" + <%= @experiment.id %> + "/data.json",
+    success: function(data) {
+      console.log("received existing data points, n = " + data.length);
+      $.each(data, function() {
+        console.log("loading datum: " + this.frame + ", " + this.time + ", " + this.x + ", " + this.y);
+        points.push(new DataPoint(this.frame, this.time, this.x, this.y));
+      });
+    },
+    complete: function() {
+      ajax_load_scale();
+    }
+  });
+});
+
+function ajax_load_scale() {
+  $.ajax( {
+    type: "GET",
+    dataType: "json",
+    url: "/experiments/" + <%= @experiment.id %> + "/scales.json",
+    success: function (data) {
+      console.log("received existing scale, n = " + data.length);
+      s = data[0];
+      scale_start_point = new DataPoint(0,0,s.x0,s.y0);
+      scale_end_point   = new DataPoint(0,0,s.x1,s.y1);
+      scale_length_px   = s.measured_length;
+      scale_known_units = s.measured_units;
+      $("#scale-distance-known").val(s.measured_length);
+      $("#scale-distance-units").val(s.measured_units);
+    },
+    complete: function() { finish_init(); }
+  });
+}
+
+// this is call once we have async loaded any data for this experiment
+// TODO dehackify this
+function finish_init() {
   start_recording();
 
   reset_data_table();
@@ -429,8 +502,7 @@ $(document).ready(function() {
   // now position all the toolbars
   $("#control-panel").offset( { left: 16, top: 16 } );
   $("#data-table-owner").offset( { left: $("body").width() - $("#data-table-owner").width() - 32, top: 16 } );
-
-});
+}
 
 </script>
 

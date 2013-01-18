@@ -1,0 +1,40 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Experiment:</b>
+  <%= @scale.experiment_id %>
+</p>
+
+<p>
+  <b>X0:</b>
+  <%= @scale.x0 %>
+</p>
+
+<p>
+  <b>Y0:</b>
+  <%= @scale.y0 %>
+</p>
+
+<p>
+  <b>X1:</b>
+  <%= @scale.x1 %>
+</p>
+
+<p>
+  <b>Y1:</b>
+  <%= @scale.y1 %>
+</p>
+
+<p>
+  <b>Measured length:</b>
+  <%= @scale.measured_length %>
+</p>
+
+<p>
+  <b>Measured units:</b>
+  <%= @scale.measured_units %>
+</p>
+
+
+<%= link_to 'Edit', edit_scale_path(@scale) %> |
+<%= link_to 'Back', scales_path %>

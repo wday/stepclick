@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  results_id: 1
+  frame: 1
+  time: 1.5
+  x: 1.5
+  y: 1.5
+
+two:
+  results_id: 1
+  frame: 1
+  time: 1.5
+  x: 1.5
+  y: 1.5

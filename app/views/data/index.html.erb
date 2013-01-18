@@ -1,0 +1,26 @@
+<h1>Listing data</h1>
+
+<table>
+  <tr>
+    <th>Results</th>
+    <th>Frame</th>
+    <th>Time</th>
+    <th>X</th>
+    <th>Y</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @data.each do |datum| %>
+  <tr>
+    <td><%= datum.results_id %></td>
+    <td><%= datum.frame %></td>
+    <td><%= datum.time %></td>
+    <td><%= datum.x %></td>
+    <td><%= datum.y %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />

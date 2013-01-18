@@ -1,0 +1,25 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Notes:</b>
+  <%= @result.notes %>
+</p>
+
+<p>
+  <b>Data:</b>
+  <%= @result.data %>
+</p>
+
+<p>
+  <b>Videoclip:</b>
+  <%= @result.videoclip_id %>
+</p>
+
+<p>
+  <b>Units:</b>
+  <%= @result.units %>
+</p>
+
+
+<%= link_to 'Edit', edit_result_path(@result) %> |
+<%= link_to 'Back', results_path %>

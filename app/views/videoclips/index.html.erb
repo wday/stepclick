@@ -30,7 +30,8 @@
               end %>
 			</td>
       <td><%= if videoclip.is_processed
-                link_to 'View Frames', "videoclips/" + videoclip.id.to_s + "/clicker"
+                #link_to 'View Frames', "videoclips/" + videoclip.id.to_s + "/clicker"
+                link_to 'Start Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment"
               end %>
 			</td>
       <td><%= if not (videoclip._is_removed == 1)

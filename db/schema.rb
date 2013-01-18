@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120305152532) do
+ActiveRecord::Schema.define(:version => 20130118195827) do
 
   create_table "clips", :force => true do |t|
     t.string   "name"
@@ -23,6 +24,31 @@ ActiveRecord::Schema.define(:version => 20120305152532) do
     t.datetime "updated_at", :null => false
   end
 
+  create_table "data", :force => true do |t|
+    t.integer  "results_id"
+    t.integer  "frame"
+    t.float    "time"
+    t.float    "x"
+    t.float    "y"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+    t.integer  "experiment_id"
+  end
+
+  create_table "experiments", :force => true do |t|
+    t.string   "name"
+    t.string   "title"
+    t.text     "description"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+    t.integer  "videoclip_id"
+    t.float    "scale_x0"
+    t.float    "scale_x1"
+    t.float    "scale_length_known"
+    t.string   "scale_unit"
+    t.integer  "frame_skip"
+  end
+
   create_table "frames", :force => true do |t|
     t.integer  "framenum"
     t.integer  "videoclip_id"
@@ -31,6 +57,27 @@ ActiveRecord::Schema.define(:version => 20120305152532) do
   end
 
   add_index "frames", ["videoclip_id"], :name => "index_frames_on_videoclip_id"
+
+  create_table "results", :force => true do |t|
+    t.text     "notes"
+    t.text     "data"
+    t.integer  "videoclip_id"
+    t.string   "units"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
+  end
+
+  create_table "scales", :force => true do |t|
+    t.integer  "experiment_id"
+    t.float    "x0"
+    t.float    "y0"
+    t.float    "x1"
+    t.float    "y1"
+    t.float    "measured_length"
+    t.string   "measured_units"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
+  end
 
   create_table "videoclips", :force => true do |t|
     t.string   "name"

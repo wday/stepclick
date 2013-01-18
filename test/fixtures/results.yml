@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  notes: MyText
+  data: MyText
+  videoclip_id: 1
+  units: MyString
+
+two:
+  notes: MyText
+  data: MyText
+  videoclip_id: 1
+  units: MyString

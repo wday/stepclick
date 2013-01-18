@@ -127,4 +127,16 @@ class VideoclipsController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+  # GET /videoclips/:id/start_experiment
+  def start_experiment
+    experiment = Experiment.new
+    videoclip = Videoclip.find(params[:id])
+    experiment.videoclip_id = videoclip.id
+
+    experiment.save
+
+    #TODO redirect to clicker that saves data for this experiment
+    redirect_to experiment
+  end
 end

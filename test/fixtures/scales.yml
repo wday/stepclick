@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  experiment_id: 1
+  x0: 1.5
+  y0: 1.5
+  x1: 1.5
+  y1: 1.5
+  measured_length: 1.5
+  measured_units: MyString
+
+two:
+  experiment_id: 1
+  x0: 1.5
+  y0: 1.5
+  x1: 1.5
+  y1: 1.5
+  measured_length: 1.5
+  measured_units: MyString

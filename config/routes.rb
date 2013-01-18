@@ -1,8 +1,11 @@
 Video::Application.routes.draw do
 
-#  resources :videoclips do
-#    resources :frames
-#  end
+  resources :scales
+
+  resources :experiments do
+    resources :data
+    resources :scales
+  end
 
   resources :videoclips do
     resources :frames
@@ -12,9 +15,6 @@ Video::Application.routes.draw do
 		member do
 			get 'soft_delete'
 		end
-  #  member do
-  #    get 'analyze_frames'
-  #  end
   end
 
   root :to => 'videoclips#index'
@@ -35,6 +35,17 @@ Video::Application.routes.draw do
   # Keep in mind you can assign values other than :controller and :action
 
   match 'videoclips/:videoclip_id/clicker' => 'clicker#index'
+  match 'videoclips/:id/start_experiment' => 'videoclips#start_experiment'
+  match 'experiments/:id/analyze' => 'experiments#inducks'
+
+  match 'experiments/:id/clicker' => 'experiments#clicker', :as => :experiment_clicker
+  match 'experiments/:id/add_datum' => 'experiments#add_datum'
+  match 'experiments/:id/set_scale' => 'experiments#set_scale'
+
+  match 'test' => 'test#index'
+  match 'ajaxtest/:id' => 'application#ajaxtest'
+
+  # match 'results' => 'results#submit', :via => :post, :as => 'post_results'
 
   # Sample of named route:
   #   match 'products/:id/purchase' => 'catalog#purchase', :as => :purchase
