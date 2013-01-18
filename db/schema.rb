@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130118195827) do
+ActiveRecord::Schema.define(:version => 20130118205944) do
 
   create_table "clips", :force => true do |t|
     t.string   "name"
@@ -82,7 +82,6 @@ ActiveRecord::Schema.define(:version => 20130118195827) do
   create_table "videoclips", :force => true do |t|
     t.string   "name"
     t.string   "path"
-    t.integer  "frames"
     t.integer  "width"
     t.integer  "height"
     t.datetime "created_at",   :null => false

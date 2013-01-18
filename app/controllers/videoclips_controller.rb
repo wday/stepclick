@@ -81,9 +81,8 @@ class VideoclipsController < ApplicationController
     inpar["width"]  = -1;
     inpar["height"] = -1;
     inpar["path"]   = uuid.generate
-    inpar["frames"] = -1;
     
-    @videoclip = Videoclip.create(inpar)
+    @videoclip = Videoclip.new(inpar)
 
     if @videoclip.save
       @videoclip.store_datafile(datafile,inpar["path"])
