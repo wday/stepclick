@@ -478,13 +478,15 @@ function ajax_load_scale() {
     url: "/experiments/" + <%= @experiment.id %> + "/scales.json",
     success: function (data) {
       console.log("received existing scale, n = " + data.length);
-      s = data[0];
-      scale_start_point = new DataPoint(0,0,s.x0,s.y0);
-      scale_end_point   = new DataPoint(0,0,s.x1,s.y1);
-      scale_length_px   = s.measured_length;
-      scale_known_units = s.measured_units;
-      $("#scale-distance-known").val(s.measured_length);
-      $("#scale-distance-units").val(s.measured_units);
+      if (data.length > 0) {
+        s = data[0];
+        scale_start_point = new DataPoint(0,0,s.x0,s.y0);
+        scale_end_point   = new DataPoint(0,0,s.x1,s.y1);
+        scale_length_px   = s.measured_length;
+        scale_known_units = s.measured_units;
+        $("#scale-distance-known").val(s.measured_length);
+        $("#scale-distance-units").val(s.measured_units);
+      }
     },
     complete: function() { finish_init(); }
   });
