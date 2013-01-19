@@ -2,7 +2,12 @@ class DataController < ApplicationController
   # GET /data
   # GET /data.json
   def index
-    @data = Datum.all
+
+    if params.has_key?(:experiment_id)
+      @data = Datum.where :experiment_id => params[:experiment_id]
+    else
+      @data = Datum.all
+    end
 
     respond_to do |format|
       format.html # index.html.erb
