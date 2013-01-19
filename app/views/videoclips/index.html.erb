@@ -1,51 +1,62 @@
-<h1> RITES Video Analysis Tool </h1>
-
-<div>
-<p>
-  Please note that uploading a videoclip may take a long time depending on network speed and current conditions.
-</p>
-<p>
-  Once a video clip has been uploaded, it must be processed before the individual frames can be viewed - if an uploaded video needs to be processed, a process link will be in it's row in the table below and the view frames link will be unavailable
-</p>
+<div class="navbar navbar-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="/">Motion Click</a>
+      <ul class="nav">
+        <li class="active"><a href="/">Video Clips</a></li>
+        <li><a href="/experiments">Experiments</a></li>
+      </ul>
+    </div>
+  </div>
 </div>
 
-<h3>videoclips</h3>
+<div class=container-fluid>
 
-<div>
-  <table>
-    <tr>
-      <th>Name</th>
-			<th>FPS</th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
+  <div class=row-fluid>
 
-  <% @videoclips.each do |videoclip| %>
-    <tr>
-      <td><%= videoclip.name %></td>
-			<td><%= videoclip.fpss %></td>
-      <td><%= if not (videoclip.is_processed == 1)
-                link_to 'Process', create_frames_videoclip_path(videoclip)
-              end %>
-			</td>
-      <td><%= if videoclip.is_processed
-                #link_to 'View Frames', "videoclips/" + videoclip.id.to_s + "/clicker"
-                link_to 'Start Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment"
-              end %>
-			</td>
-      <td><%= if not (videoclip._is_removed == 1)
-								link_to 'Remove',  videoclip, :confirm => 'Are you sure?', :method => :delete 
-							end%>
-			</td>
-    </tr>
-  <% end %>
-	<tr>
-		<td colspan=5 style="background: #d0d0d0">
-    <b><%= link_to 'Upload a New Videoclip', new_videoclip_path %></b>
-		</td>
-	</tr>
-  </table>
+    <div class=span2>
+    <p>
+      Please note that uploading a videoclip may take a long time depending on network speed and current conditions.
+    </p>
+    <p>
+      Once a video clip has been uploaded, it must be processed before the individual frames can be viewed - if an uploaded video needs to be processed, a process link will be in it's row in the table below and the view frames link will be unavailable
+    </p>
+    <%= link_to 'Upload Videoclip', new_videoclip_path, :class => 'btn' %>
+    </div>
+
+    <div class=span10>
+      <h3>Videoclips</h3>
+
+      <div>
+        <table class=table>
+          <tr>
+            <th>Name</th>
+      			<th>FPS</th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+
+        <% @videoclips.each do |videoclip| %>
+          <tr>
+            <td><%= videoclip.name %></td>
+      			<td><%= videoclip.fpss %></td>
+            <td><%= link_to 'Edit Information', '/videoclips/' + videoclip.id.to_s + '/edit', :class => 'btn' %>
+            <td><%= if not (videoclip.is_processed == 1)
+                      link_to 'Process', create_frames_videoclip_path(videoclip), :class => 'btn'
+                    end %>
+      			</td>
+            <td><%= if videoclip.is_processed
+                      link_to 'Start Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment", :class => 'btn'
+                    end %>
+      			</td>
+            <td><%= if not (videoclip._is_removed == 1)
+      								link_to 'Remove',  videoclip, :confirm => 'Are you sure?', :method => :delete, :class => 'btn'
+      							end%>
+      			</td>
+          </tr>
+        <% end %>
+        </table>
+      </div>
 </div>
-
 

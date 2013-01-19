@@ -43,7 +43,8 @@ gem 'uuid'
 #gem 'mongrel'
 
 gem 'execjs'
-#gem 'therubyracer'
+gem 'therubyracer'
 gem 'tilt', '= 1.3.3'
 
 gem 'passenger'
+gem 'less-rails-bootstrap'

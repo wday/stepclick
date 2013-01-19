@@ -1,27 +1,51 @@
-<h1>Listing experiments</h1>
+<div class="navbar navbar-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="/">Motion Click</a>
+      <ul class="nav">
+        <li><a href="/">Video Clips</a></li>
+        <li class="active"><a href="/experiments">Experiments</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
 
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Title</th>
-    <th>Description</th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
+<div class=container-fluid>
 
-<% @experiments.each do |experiment| %>
-  <tr>
-    <td><%= experiment.name %></td>
-    <td><%= experiment.title %></td>
-    <td><%= experiment.description %></td>
-    <td><%= link_to 'Show', experiment %></td>
-    <td><%= link_to 'Edit', edit_experiment_path(experiment) %></td>
-    <td><%= link_to 'Destroy', experiment, confirm: 'Are you sure?', method: :delete %></td>
-  </tr>
-<% end %>
-</table>
+  <header class="jumbotron subhead">
+    <div class="container">
+      <h1> Saved Experiments </h1>
+    </div>
+  </header>
 
-<br />
+  <div class=row-fluid>
+    <div class=span2>
+      <%= link_to 'New Experiment', videoclips_path, :class => 'btn' %>
+    </div>
+    <div class=span10>
+      <table class=table>
+        <tr>
+          <th>Name</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
 
-<%= link_to 'New Experiment', new_experiment_path %>
+      <% @experiments.each do |experiment| %>
+        <tr>
+          <td><%= experiment.name %></td>
+          <td><%= experiment.title %></td>
+          <td><%= experiment.description %></td>
+          <td><%= link_to 'Edit Info', edit_experiment_path(experiment), :class => 'btn' %></td>
+          <td><%= link_to 'Analyze Video', 'experiments/' + experiment.id.to_s + '/clicker', :class => 'btn' %></td>
+          <td><%= link_to 'Remove', experiment, confirm: 'Are you sure?', method: :delete, :class => 'btn' %></td>
+          <td><%= link_to 'View Data', experiment_data_path(experiment), :class => 'btn' %></td>
+          <td><%= link_to 'Save CSV', '/experiments/' + experiment.id.to_s + '/data.csv', :class => 'btn' %></td>
+        </tr>
+      <% end %>
+      </table>
+    </div>
+  </div>
+</div>
