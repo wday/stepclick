@@ -31,7 +31,7 @@ function stop_measuring() {
 } 
 
 function fps() {
-  return $('#txt-fps').val();
+  return initial_fps;
 }
 
 function fit_canvas_to_window() {
