@@ -1,1 +1,0 @@
-function zeroFill(a,b){return b-=a.toString().length,b>0?(new Array(b+(/\./.test(a)?2:1))).join("0")+a:a+""};

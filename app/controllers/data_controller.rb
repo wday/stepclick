@@ -12,6 +12,18 @@ class DataController < ApplicationController
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @data }
+      format.csv {
+        results = []
+        @data.each { |datum| 
+          results << { 
+            :frame => datum.frame,
+            :time => datum.time,
+            :x => datum.x, 
+            :y => datum.y,
+          }
+        }
+        render 'shared/csvtable', :locals => { :results => results }
+      }
     end
   end
 
