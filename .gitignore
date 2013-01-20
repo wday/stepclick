@@ -14,3 +14,7 @@
 /log/*.log
 /tmp
 /public/data/*
+migrate_notes.txt
+/backup
+
+.DS_Store
