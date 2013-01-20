@@ -1,25 +1,27 @@
 class DataController < ApplicationController
   # GET /data
   # GET /data.json
+  # TODO accept ?argument to determine whether to render raw or scaled results
   def index
 
     if params.has_key?(:experiment_id)
       @data = Datum.where :experiment_id => params[:experiment_id]
     else
-      @data = Datum.all
+      render :bad_request
     end
 
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @data }
       format.csv {
+        # TODO add helper method to Datum class results = Datum::to_results(data)
         results = []
         @data.each { |datum| 
           results << { 
-            :frame => datum.frame,
-            :time => datum.time,
-            :x => datum.x, 
-            :y => datum.y,
+            "frame" => datum.frame,
+            "time (s)" => datum.time,
+            "x (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.x(datum.x), 
+            "y (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.y(datum.y),
           }
         }
         render 'shared/csvtable', :locals => { :results => results }

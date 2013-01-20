@@ -1,11 +1,20 @@
 <div class=container>
 
+<%= render 'navbar' %>
+
+<%
+
+experiment = @data.first.experiment
+scale = experiment.scale
+
+%>
+
   <table class=table>
     <tr>
       <th>Frame</th>
-      <th>Time</th>
-      <th>X</th>
-      <th>Y</th>
+      <th>Time (s)</th>
+      <th>X ( <%= scale.measured_units %> ) </th>
+      <th>Y ( <%= scale.measured_units %> ) </th>
       <th></th>
       <th></th>
       <th></th>
@@ -14,11 +23,12 @@
   <% @data.each do |datum| %>
     <tr>
       <td><%= datum.frame %></td>
-      <td><%= datum.time %></td>
-      <td><%= datum.x %></td>
-      <td><%= datum.y %></td>
+      <td><%= "%0.3f" % datum.time %></td>
+      <td><%= "%0.3f" % scale.x(datum.x) %></td>
+      <td><%= "%0.3f" % scale.y(datum.y) %></td>
     </tr>
   <% end %>
   </table>
 
+<%= link_to 'Export Data to File', 'data.csv', :class => 'btn' %>
 </div>

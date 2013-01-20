@@ -2,7 +2,11 @@ class ScalesController < ApplicationController
   # GET /scales
   # GET /scales.json
   def index
-    @scales = Scale.all
+    if params.has_key?(:experiment_id)
+      @scales = Scale.where :experiment_id => params[:experiment_id]
+    else
+      @scales = Scale.all
+    end
 
     respond_to do |format|
       format.html # index.html.erb

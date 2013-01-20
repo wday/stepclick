@@ -1,7 +1,5 @@
 Video::Application.routes.draw do
 
-  resources :scales
-
   resources :experiments do
     resources :data
     resources :scales

@@ -1,28 +1,13 @@
-<div class="navbar navbar-top">
-  <div class="navbar-inner">
-    <div class="container">
-      <a class="brand" href="/">Motion Click</a>
-      <ul class="nav">
-        <li><a href="/">Video Clips</a></li>
-        <li class="active"><a href="/experiments">Experiments</a></li>
-      </ul>
-    </div>
-  </div>
-</div>
-
 <div class=container-fluid>
 
-  <header class="jumbotron subhead">
-    <div class="container">
-      <h1> Saved Experiments </h1>
-    </div>
-  </header>
+<%= render 'navbar' %>
 
   <div class=row-fluid>
     <div class=span2>
       <%= link_to 'New Experiment', videoclips_path, :class => 'btn' %>
     </div>
     <div class=span10>
+      <h2> Saved Experiments </h2>
       <table class=table>
         <tr>
           <th>Name</th>
