@@ -90,26 +90,26 @@ function render_points() {
   ctx.fillStyle = "yellow";
 
   $(points).each(function() {
-    ctx.fillRect(this.px_x(imgwidth)-1, this.px_y(imgheight)-1, 3, 3);
+    ctx.fillRect(this.px_x(imgwidth)-1, imgheight - this.px_y(imgheight) + 1, 3, 3);
     pdata.push(this.toTuple(scale_known_distance,scale_length_px));
   });
 
   ctx.fillStyle = "red";
 
   if( scale_start_point ) {
-    ctx.fillRect(scale_start_point.px_x(imgwidth)-1, scale_start_point.px_y(imgheight)-1,3,3);
+    ctx.fillRect(scale_start_point.px_x(imgwidth)-1, imgheight - scale_start_point.px_y(imgheight)+1,3,3);
   }
 
   if( scale_end_point ) {
-    ctx.fillRect(scale_end_point.px_x(imgwidth)-1, scale_end_point.px_y(imgheight)-1,3,3);
+    ctx.fillRect(scale_end_point.px_x(imgwidth)-1, imgheight - scale_end_point.px_y(imgheight)+1,3,3);
   }
 
   if( scale_start_point && scale_end_point ) {
     ctx.strokeStyle = "green";
     ctx.lineWidth = 2;
     ctx.beginPath()
-    ctx.moveTo( scale_start_point.px_x(imgwidth), scale_start_point.px_y(imgheight) );
-    ctx.lineTo( scale_end_point.px_x(imgwidth), scale_end_point.px_y(imgheight) );
+    ctx.moveTo( scale_start_point.px_x(imgwidth), imgheight - scale_start_point.px_y(imgheight) );
+    ctx.lineTo( scale_end_point.px_x(imgwidth), imgheight - scale_end_point.px_y(imgheight) );
     ctx.stroke();
   }
   
@@ -183,7 +183,7 @@ function click_handler(e) {
 
   // normalize to image
   var xprime = x / imgwidth;
-  var yprime = y / imgheight;
+  var yprime = (imgheight - y) / imgheight; // axis is inverted compared to "science" plot standards
 
   if (is_measuring) {
     if (scale_start_point == null) {

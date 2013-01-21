@@ -1,12 +1,6 @@
-<div class=container>
-
-<%= render 'navbar' %>
-
 <%
-
 experiment = @data.first.experiment
 scale = experiment.scale
-
 %>
 
   <table class=table>
@@ -31,4 +25,4 @@ scale = experiment.scale
   </table>
 
 <%= link_to 'Export Data to File', 'data.csv', :class => 'btn' %>
-</div>
+<%= link_to 'Plot', experiment_plot_path(experiment), :class => 'btn' %>

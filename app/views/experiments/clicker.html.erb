@@ -14,9 +14,14 @@
 	fps = clip.fpss.to_f
 %>
 
-<div class="container-fluid">
-
-<%= render 'navbar' %>
+<% #TODO make this generic 
+if flash[:error] %>
+<div class=row-fluid>
+  <p class=error><%= flash[:error] %></p>
+</div>
+<%
+end
+%>
 
   <div class="row-fluid">
 
@@ -48,7 +53,7 @@
       <button class=btn id="control-next" onclick="load_next_frame();">next</button><br />
       <h4>Data</h4>
       <%= link_to 'View Data', experiment_data_path(@experiment), :class => 'btn' %>
-      <%= link_to 'Save CSV Data', '/experiments/' + @experiment.id.to_s + '/data.csv', :class => 'btn' %>
+      <%= link_to 'Plot Data', experiment_plot_path(@experiment), :class => 'btn' %>
       </ul>
     </div>
 
@@ -58,7 +63,6 @@
 
   </div>
 
-</div>
 <script>
 $(document).ready(function() {
 

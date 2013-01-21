@@ -4,11 +4,21 @@
   <title>Video</title>
   <%= stylesheet_link_tag    "application", :media => "all" %>
   <%= javascript_include_tag "application" %>
+  <%= javascript_include_tag "//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js" %>
+  <%= include_gon %>
   <%= csrf_meta_tags %>
 </head>
 <body>
 
+<div class=content-fluid>
+
+<%= render 'shared/navbar' %>
 <%= yield %>
 
+</div>
+
 </body>
+<script>
+$(".navbar li#<%= controller.controller_name %>").attr("class","active");
+</script>
 </html>

@@ -1,7 +1,7 @@
 Video::Application.routes.draw do
 
   resources :experiments do
-    resources :data
+    resources :data 
     resources :scales
   end
 
@@ -39,6 +39,7 @@ Video::Application.routes.draw do
   match 'experiments/:id/clicker' => 'experiments#clicker', :as => :experiment_clicker
   match 'experiments/:id/add_datum' => 'experiments#add_datum'
   match 'experiments/:id/set_scale' => 'experiments#set_scale'
+  match 'experiments/:experiment_id/plot' => 'data#plot', :as => :experiment_plot
 
   match 'test' => 'test#index'
   match 'ajaxtest/:id' => 'application#ajaxtest'

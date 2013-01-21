@@ -60,7 +60,7 @@ class ExperimentsController < ApplicationController
 
     respond_to do |format|
       if @experiment.update_attributes(params[:experiment])
-        format.html { redirect_to experiments_path, notice: 'Experiment was successfully updated.' }
+        format.html { redirect_to '/experiments/' + @experiment.id.to_s + '/clicker', notice: 'Experiment was successfully updated.' }
         format.json { head :no_content }
       else
         format.html { render action: "edit" }

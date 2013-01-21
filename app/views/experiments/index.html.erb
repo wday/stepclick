@@ -1,36 +1,25 @@
-<div class=container-fluid>
+<div class=row-fluid>
+  <div class=span2>
+    <%= link_to 'New Experiment', videoclips_path, :class => 'btn' %>
+  </div>
+  <div class=span10>
+    <table class=table>
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Videoclip</th>
+      </tr>
 
-<%= render 'navbar' %>
-
-  <div class=row-fluid>
-    <div class=span2>
-      <%= link_to 'New Experiment', videoclips_path, :class => 'btn' %>
-    </div>
-    <div class=span10>
-      <h2> Saved Experiments </h2>
-      <table class=table>
-        <tr>
-          <th>Name</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
-
-      <% @experiments.each do |experiment| %>
-        <tr>
-          <td><%= experiment.name %></td>
-          <td><%= experiment.title %></td>
-          <td><%= experiment.description %></td>
-          <td><%= link_to 'Edit Info', edit_experiment_path(experiment), :class => 'btn' %></td>
-          <td><%= link_to 'Analyze Video', 'experiments/' + experiment.id.to_s + '/clicker', :class => 'btn' %></td>
-          <td><%= link_to 'Remove', experiment, confirm: 'Are you sure?', method: :delete, :class => 'btn' %></td>
-          <td><%= link_to 'View Data', experiment_data_path(experiment), :class => 'btn' %></td>
-          <td><%= link_to 'Save CSV', '/experiments/' + experiment.id.to_s + '/data.csv', :class => 'btn' %></td>
-        </tr>
-      <% end %>
-      </table>
-    </div>
+    <% @experiments.each do |experiment| %>
+      <tr>
+        <td><%= experiment.title %></td>
+        <td><%= experiment.description %></td>
+        <td><%= experiment.videoclip.name %></td>
+        <td><%= link_to 'Edit Information', edit_experiment_path(experiment), :class => 'btn' %></td>
+        <td><%= link_to 'Analyze Video', 'experiments/' + experiment.id.to_s + '/clicker', :class => 'btn' %></td>
+        <td><%= link_to 'Remove', experiment, confirm: 'Are you sure?', method: :delete, :class => 'btn' %></td>
+      </tr>
+    <% end %>
+    </table>
   </div>
 </div>

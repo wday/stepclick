@@ -1,4 +1,26 @@
 class DataController < ApplicationController
+ 
+  # GET /experiments/:experiment_id/plot
+  def plot
+    if params.has_key?(:experiment_id)
+      @data = Datum.where :experiment_id => params[:experiment_id]
+      experiment = Experiment.find params[:experiment_id]
+      scale = experiment.scale
+    else
+      @data = nil
+    end
+    respond_to do |format|
+      if @data
+        gon.data = @data
+        gon.experiment = experiment
+        gon.scale = experiment.scale
+        format.html
+      else
+        format.html redirect_to experiment_clicker_path(@data.experiment), :flash => {:error => 'Measure scale before plotting'}
+      end
+    end
+  end
+
   # GET /data
   # GET /data.json
   # TODO accept ?argument to determine whether to render raw or scaled results
@@ -11,21 +33,31 @@ class DataController < ApplicationController
     end
 
     respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @data }
-      format.csv {
-        # TODO add helper method to Datum class results = Datum::to_results(data)
-        results = []
-        @data.each { |datum| 
-          results << { 
-            "frame" => datum.frame,
-            "time (s)" => datum.time,
-            "x (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.x(datum.x), 
-            "y (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.y(datum.y),
-          }
+      if not @data.empty? and @data.first.experiment.scale.nil? 
+        format.html { 
+          redirect_to experiment_clicker_path(@data.first.experiment), :flash => {:error => 'Measure scale before viewing data'} 
         }
-        render 'shared/csvtable', :locals => { :results => results }
-      }
+      else
+        if not @data.empty?
+          format.html
+        else
+          redirect_to experiments_path
+        end
+        format.json { render json: @data }
+        format.csv {
+          # TODO add helper method to Datum class results = Datum::to_results(data)
+          results = []
+          @data.each { |datum| 
+            results << { 
+              "frame" => datum.frame,
+              "time (s)" => datum.time,
+              "x (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.x(datum.x), 
+              "y (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.y(datum.y),
+            }
+          }
+          render 'shared/csvtable', :locals => { :results => results }
+        }
+      end
     end
   end
 

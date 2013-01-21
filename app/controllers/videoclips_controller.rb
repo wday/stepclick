@@ -106,7 +106,7 @@ class VideoclipsController < ApplicationController
 
     respond_to do |format|
       if @videoclip.update_attributes(params[:videoclip])
-        format.html { redirect_to @videoclip, :notice => 'Videoclip was successfully updated.' }
+        format.html { redirect_to '/', :notice => 'Videoclip was successfully updated.' }
         format.json { head :no_content }
       else
         format.html { render :action => "edit" }
@@ -136,6 +136,6 @@ class VideoclipsController < ApplicationController
     experiment.save
 
     #TODO redirect to clicker that saves data for this experiment
-    redirect_to experiment
+    redirect_to '/experiments/' + experiment.id.to_s + '/edit'
   end
 end

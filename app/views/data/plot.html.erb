@@ -1,0 +1,18 @@
+<% scale = @data.first.experiment.scale %>
+
+<div id="graph"></div>
+
+<%= link_to 'Back', experiment_clicker_path(@data.first.experiment), :class => 'btn' %>
+
+<script>
+$(document).ready( function() {
+
+  var graph = 
+    d3.select("#graph").append("svg")
+    .attr("width", 800)
+    .attr("height", 600);
+
+  plot_csv(graph, 800, 600, gon.data, gon.scale, "time", ["x", "y"], ["red", "blue"]);
+
+} );
+</script>
