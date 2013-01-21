@@ -138,4 +138,12 @@ class VideoclipsController < ApplicationController
     #TODO redirect to clicker that saves data for this experiment
     redirect_to '/experiments/' + experiment.id.to_s + '/edit'
   end
+
+  # GET /videoclips/:id/play
+  def play
+    @videoclip = Videoclip.find params[:id]
+    respond_to do |format|
+      format.html
+    end
+  end
 end

@@ -34,6 +34,7 @@ Video::Application.routes.draw do
 
   match 'videoclips/:videoclip_id/clicker' => 'clicker#index'
   match 'videoclips/:id/start_experiment' => 'videoclips#start_experiment'
+  match 'videoclips/:id/play' => 'videoclips#play'
   match 'experiments/:id/analyze' => 'experiments#inducks'
 
   match 'experiments/:id/clicker' => 'experiments#clicker', :as => :experiment_clicker
