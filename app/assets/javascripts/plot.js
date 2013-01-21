@@ -1,54 +1,191 @@
-function plot_csv(graph, w, h, csv, scale, xcolid, ycolids, colors) {
-  var m, raw, graph, hmap, xmap, ymap, line, xmin, xmax, ymin, ymax, units, xcolid, ycolid, xymin, xymax;
+function plot_csv(graph, w, h, csv, scale, xcolid, ycolids, colors, update_selected_view) {
+  var m, raw, graph, hmap, xmap, ymap, line, xmin, xmax, ymin, ymax, units, xcolid, ycolid, xymin, xymax, get_y_raw, get_x_raw;
 
   // TODO parameterize this
   m = 64;
 
+  viz = graph.append("svg:g")
+    .attr("transform","translate(" + m + ", " + m + ")");
+
   units  = gon.scale.measured_units;
+
+  function make_screen_getter(data_to_screen,cid) {
+    return {
+        column_id: cid,
+        to_screen: function(d) { return data_to_screen(d[cid]); }
+    }
+  }
+
+  function make_raw_getter(cid) {
+    return function(d) { 
+      return d[cid]; 
+    }
+  }
 
   csv  = gon.data;
 
-  xmin = d3.min(csv, function(d){return d[xcolid]});
-  xmax = d3.max(csv, function(d){return d[xcolid]});
+  // get domain bounds
+  get_x_raw = make_raw_getter(xcolid);
+  xmin      = d3.min(csv, get_x_raw);
+  xmax      = d3.max(csv, get_x_raw);
   
-  ymin = []; 
-  ymax = [];
+  ymin      = []; 
+  ymax      = []; 
+  get_y_raw = [];
   for (var i = 0; i < ycolids.length; i++) {
-    ymin.push( d3.min(csv, function(d){return d[ycolids[i]]}) );
-    ymax.push( d3.max(csv, function(d){return d[ycolids[i]]}) );
+    get_y_raw[i] = make_raw_getter(ycolids[i]);
   }
-
+  for (var i = 0; i < ycolids.length; i++) {
+    ymin.push( d3.min(csv, get_y_raw[i]) );
+    ymax.push( d3.max(csv, get_y_raw[i]) );
+  }
   ymin = d3.min(ymin);
   ymax = d3.max(ymax);
 
-  xmap = d3.scale.linear().domain([xmin,xmax]).range([m, w-m]);
-  ymap = d3.scale.linear().domain([ymin,ymax]).range([h-m, m]);
+  // set up screen domain maps
+  xmap = d3.scale.linear().domain([xmin,xmax]).range([0, w-2*m]);
+  ymap = d3.scale.linear().domain([ymin,ymax]).range([h-2*m, 0]);
 
+  // create getters than map from data space to screen spce
+  var get_x = make_screen_getter(xmap,xcolid);
+  var get_y = [];
+  for (var i = 0; i < ycolids.length; i++) {
+    get_y[i] = make_screen_getter(ymap,ycolids[i]);
+  }
+
+  // RENDER SCREEN OBJECTS FOR DATA
   line = [];
   for (var i = 0; i < ycolids.length; i++) {
     line.push( d3.svg.line()
-                .x(function(d) {return xmap(d[xcolid]);})
-                .y(function(d) {return ymap(d[ycolids[i]]);}) );
+                .x(get_x.to_screen)
+                .y(get_y[i].to_screen) );
   }
 
   for (var i = 0; i < ycolids.length; i++) {
-    graph.append("svg:path")
+    viz.append("svg:path")
       .data(csv)
       .style("stroke",colors[i])
       .attr("d", line[i](csv));
   }
 
+  function make_point_selector(get_y) {
+    return function (d,i) {
+
+      var data = {
+        "x1":get_x.to_screen(d),
+        "y1":get_y.to_screen(d), 
+        "x0":null, 
+        "y0":null
+      };
+
+      // if there was a previous selected point, we will transition the selection from that one to the new one
+      var data0 = d3.select('.selected').data()[0];
+
+      if (data0 === undefined) {
+        data.x0 = data.x1;
+        data.y0 = data.y1;
+      } else {
+        data.x0 = data0.x1;
+        data.y0 = data0.y1;
+      }
+
+      // now render the selection
+      d3.selectAll('.selected').remove();
+      viz.selectAll('.selected')
+          .data([data])
+        .enter().append("circle").attr("class","selected")
+          .attr("r", 12)
+          .attr("cx", function(dd){return dd.x0})
+          .attr("cy", function(dd){return dd.y0})
+          .style("fill", "none")
+          .style("stroke", "green")
+          .style("stroke-width", 3)
+        .transition()
+          .duration(750)
+          .attr("r", 12)
+          .attr("cx", function(dd){return dd.x1})
+          .attr("cy", function(dd){return dd.y1});
+
+      // render the centered derivative at xclick
+      var m;
+      if ((i+1) < csv.length && (i-1) >= 0) {
+        var d2     = csv[i+1];
+        var d0     = csv[i-1];
+        var d1     = d;
+        var mf     = (get_y.to_screen(d2)-get_y.to_screen(d1))/(get_x.to_screen(d2)-get_x.to_screen(d1));
+        var mb     = (get_y.to_screen(d1)-get_y.to_screen(d0))/(get_x.to_screen(d1)-get_x.to_screen(d0));
+            m      = 0.5 * (mf + mb);
+        var yclick = get_y.to_screen(d);
+        var xclick = get_x.to_screen(d);
+        var bclick = yclick - m * xclick;
+        function dydx(x) {
+          return m * x + bclick;
+        }
+
+        if ( $('.derivative').length == 0) {
+          viz.append('line').attr('class','derivative')
+            .attr('x1',xmap.range()[0])
+            .attr('x2',xmap.range()[1])
+            .attr('y1',bclick)
+            .attr('y2',dydx(xmap.range()[1]))
+            .style('stroke','black');
+        } else {
+          viz.selectAll('.derivative')
+            .transition()
+              .duration(750)
+              .attr('x1',xmap.range()[0])
+              .attr('x2',xmap.range()[1])
+              .attr('y1',bclick)
+              .attr('y2',dydx(xmap.range()[1]));
+        }
+      } else {
+        viz.selectAll('.derivative').remove();
+        m = undefined;
+      }
+
+      update_selected_view(
+        xmap.invert(get_x.to_screen(d)), get_x.column_id, 
+        ymap.invert(get_y.to_screen(d)), get_y.column_id,
+        -m); // HACK since we are working with inverted screen coordinates
+
+    }
+  }
+
+
+  for (var i = 0; i < ycolids.length; i++) {
+    viz.selectAll("circle_"+ycolids[i])
+      .data(csv)
+      .enter().append("svg:circle").attr("class","circle_"+ycolids[i]).attr("id","circle_" + ycolids[i] + "_" + i)
+        .attr("cx", get_x.to_screen)
+        .attr("cy", get_y[i].to_screen)
+        .attr("r", 8)
+        .style('stroke','black')
+        .style('fill',colors[i])
+        .on("click", make_point_selector(get_y[i]));
+  }
+
   var xaxis = d3.svg.axis().scale(xmap).ticks(8);
   var yaxis = d3.svg.axis().scale(ymap).ticks(10).orient("left");
 
-  var axis_y = graph.append("svg:g")
+  var axis_x = viz.append("svg:g")
     .attr("class","x axis")
-    .attr("transform","translate(0," + (h-m) + ")")
+    .attr("transform","translate(0," + (h-2*m) + ")")
     .call(xaxis);
 
-  var axis_x = graph.append("svg:g")
+  if (d3.min(ymap.domain()) < 0 && 0 < d3.max(ymap.domain())) {
+    console.log("adding horizontal zero indicator");
+    viz.append("line")
+      .attr("x1",0)
+      .attr("x2",w-2*m) //HACK why 2*m??
+      .attr("y1",ymap(0))
+      .attr("y2",ymap(0))
+      .style('stroke','gray')
+      .style('stroke-width',1);
+  }
+
+  var axis_y = viz.append("svg:g")
     .attr("class","y axis")
-    .attr("transform","translate(" + m + ",0)")
+    .attr("transform","translate(0,0)")
     .call(yaxis);
 
   graph.append("text")
@@ -76,4 +213,6 @@ function plot_csv(graph, w, h, csv, scale, xcolid, ycolids, colors) {
       .text(ycolids[i] + " (" + units + ")")
       .style("stroke",colors[i]);
   }
+
+  return {"xmap": xmap, "ymap": ymap, "line": line}
 }

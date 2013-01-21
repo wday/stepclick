@@ -40,6 +40,7 @@ Video::Application.routes.draw do
   match 'experiments/:id/add_datum' => 'experiments#add_datum'
   match 'experiments/:id/set_scale' => 'experiments#set_scale'
   match 'experiments/:experiment_id/plot' => 'data#plot', :as => :experiment_plot
+  match 'experiments/:experiment_id/distance' => 'data#distance', :as => :experiment_distance_plot
 
   match 'test' => 'test#index'
   match 'ajaxtest/:id' => 'application#ajaxtest'

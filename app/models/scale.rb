@@ -15,4 +15,16 @@ class Scale < ActiveRecord::Base
 		Math.sqrt (y1 - y0)*(y1 - y0) + (x1 - x0)*(x1 - x0)
 	end
 
+	def get_scaled(data)
+		results = []
+		data.each do |datum|
+			results << {
+				"frame" => datum.frame,
+				"time" => datum.time,
+				"x" => x( datum.x ),
+				"y" => y( datum.y )
+			}
+		end
+		return results
+	end
 end
