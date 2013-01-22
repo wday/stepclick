@@ -33,8 +33,8 @@ namespace :deploy do
 	task :start do ; end
 	task :stop do ; end
 
-	task :restart, :roles => :app, :except => { :no_release => true } do
-		run "touch #{File.join(current_path,'tmp','restart.txt')}"
+	task :restart do
+		run "cd #{deploy_to}; touch tmp/restart.txt"
 	end
 
 	desc "install required gems on remote"
@@ -62,5 +62,9 @@ namespace :deploy do
   	task :migrate_production do
   		run "cd #{deploy_to}; RAILS_ENV=production rake db:migrate"
   	end
+
+  task :process_videos do
+    run "cd #{deploy_to}; ./process-videos.rb"
+  end
 
 end

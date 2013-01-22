@@ -18,3 +18,4 @@ migrate_notes.txt
 /backup
 
 .DS_Store
+process-videos.rb
