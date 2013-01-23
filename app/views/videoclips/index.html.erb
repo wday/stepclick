@@ -10,9 +10,6 @@
         <tr>
           <th>Name</th>
     			<th>FPS</th>
-          <th></th>
-          <th></th>
-          <th></th>
         </tr>
 
       <% @videoclips.each do |videoclip| %>
@@ -28,6 +25,7 @@
                     link_to 'Start Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment", :class => 'btn'
                   end %>
     			</td>
+          <td><%= link_to 'Play', "videoclips/" + videoclip.id.to_s + "/play", :class => 'btn' %> </td>
           <td><%= if not (videoclip._is_removed == 1)
     								link_to 'Remove',  videoclip, :confirm => 'Are you sure?', :method => :delete, :class => 'btn'
     							end%>
