@@ -13,15 +13,14 @@
         </tr>
 
       <% @videoclips.each do |videoclip| %>
+        <%= videoclip.is_removed && next %>
         <tr>
           <td><%= videoclip.name %></td>
     			<td><%= videoclip.fpss %></td>
           <td><%= link_to 'Edit Information', '/videoclips/' + videoclip.id.to_s + '/edit', :class => 'btn' %>
           <td><%= if not (videoclip.is_processed == 1)
                     link_to 'Process', create_frames_videoclip_path(videoclip), :class => 'btn'
-                  end %>
-    			</td>
-          <td><%= if videoclip.is_processed
+                  else
                     link_to 'Start Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment", :class => 'btn'
                   end %>
     			</td>

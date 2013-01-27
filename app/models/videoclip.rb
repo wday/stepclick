@@ -6,7 +6,7 @@ class Videoclip < ActiveRecord::Base
   has_many :frames
 
 	def soft_delete()
-		update_attribute(:is_removed, 1)
+		update_column(:is_removed, 1)
 	end
 
   def create_frames(vidpath)

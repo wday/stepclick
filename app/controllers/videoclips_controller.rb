@@ -5,6 +5,7 @@ class VideoclipsController < ApplicationController
   # GET /videoclips.json
   def index
     @videoclips = Videoclip.all
+    @show_all = params.has_key? 'debug'
 
     respond_to do |format|
       format.html # index.html.erb
@@ -20,13 +21,6 @@ class VideoclipsController < ApplicationController
 
     redirect_to videoclips_path
   end
-
-	def soft_delete
-		@videoclip = Videoclip.find(params[:id])
-		@videoclip.soft_delete
-
-		redirect_to videoclips_path
-	end
 
   # GET /videoclips/1/analyze_frames
   # GET /videoclips/1/analyze_frames.json
@@ -118,13 +112,11 @@ class VideoclipsController < ApplicationController
   # DELETE /videoclips/1
   # DELETE /videoclips/1.json
   def destroy
+    puts 'NOTE -- Soft deleting and going home'
     @videoclip = Videoclip.find(params[:id])
-    @videoclip.destroy
+    @videoclip.soft_delete
 
-    respond_to do |format|
-      format.html { redirect_to videoclips_url }
-      format.json { head :no_content }
-    end
+    redirect_to '/'
   end
 
   # GET /videoclips/:id/start_experiment
