@@ -48,7 +48,7 @@ namespace :deploy do
   	end
 
   	desc "pull most recent from git"
-  	task :update_bootstrap do
+  	task :update do
   		run "cd #{deploy_to}; [[ -f tmp/pids/passenger.3090.pid ]] && kill $(cat tmp/pids/passenger.3090.pid) || echo not running"
   		run "cd #{deploy_to}; rake assets:clean"
   		run "cd #{deploy_to}; git pull -u origin bootstrap"
