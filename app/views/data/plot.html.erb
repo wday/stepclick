@@ -55,7 +55,7 @@ function update_plot() {
     .attr("width", 800)
     .attr("height", 600);
 
-  plot_csv(graph, 800, 600, gon.data, gon.scale, gon.xcolid, colids, gon.colors, update_selected_display);
+  plot_csv(graph, 800, 600, "", gon.data, gon.scale, gon.xcolid, colids, gon.colors, update_selected_display);
 }
 
 $(document).ready( function() {
@@ -65,7 +65,7 @@ $(document).ready( function() {
     .attr("width", 800)
     .attr("height", 600);
 
-  plot_csv(graph, 800, 600, gon.data, gon.scale, gon.xcolid, gon.colids, gon.colors, update_selected_display);
+  plot_csv(graph, 800, 600, "", gon.data, gon.scale, gon.xcolid, gon.colids, gon.colors, update_selected_display);
 
 } );
 </script>

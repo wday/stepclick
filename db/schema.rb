@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130129220101) do
+ActiveRecord::Schema.define(:version => 20130130155854) do
 
   create_table "analyzers", :force => true do |t|
     t.datetime "created_at", :null => false
@@ -51,6 +51,7 @@ ActiveRecord::Schema.define(:version => 20130129220101) do
     t.float    "scale_length_known"
     t.string   "scale_unit"
     t.integer  "frame_skip"
+    t.string   "colids"
   end
 
   create_table "frames", :force => true do |t|

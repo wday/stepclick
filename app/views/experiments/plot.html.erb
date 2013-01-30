@@ -1,0 +1,77 @@
+<div class=row-fluid>
+  <div class="span2">
+    Data to plot
+    <table class="table" id="lines">
+      <% @colids.each do |colid| %>
+        <tr><td> <%= check_box_tag colid, colid, false %> </td> <td><%= colid %> </td> </tr>
+      <% end %>
+    </table> 
+    <button id="update-plot" class="btn btn-primary" onclick="update_plot();">Update Plot</button><br />
+    <hr>
+    <table class="table" id="output">
+      <tr><td style="text-align: right"><span id='select-x-id'></span>=</td><td><span id="select-x"></span></td></tr>
+      <tr><td style="text-align: right"><span id='select-y-id'></span>=</td><td><span id="select-y"></span></td></tr>
+      <tr><td style="text-align: right">&Delta;<span id='select-y-id'></span>/&Delta;<span id='select-x-id'></span>=</td><td><span id='select-slope'></span></td></tr>
+    </table>
+    <hr>
+    Plot type:
+    <ul>
+      <li><%= link_to 'Position', 'plot', :class => 'btn' %> </li>
+      <li><%= link_to 'Distance', 'distance', :class => 'btn' %></li>
+    </ul>
+  </div>
+  <div class="span10">
+    <div id="graph"></div>
+  </div>
+</div>
+
+<script>
+
+function update_selected_display(x,xid,y,yid,slope) {
+  $('span#select-x').html(""+x.toFixed(3));
+  $('span#select-x-id').html(""+xid);
+  $('span#select-y').html(""+y.toFixed(3));
+  $('span#select-y-id').html(""+yid);
+  $('span#select-slope').html(""+slope.toFixed(3));
+}
+
+// TODO: On update plot, save the desired colids to the experiment 
+//       Furthermore, then reload then on the appropriate call to the controller
+function update_plot() {
+  var new_colids = [];
+  $('table#lines input:checkbox:checked').each( function() {
+    new_colids.push(this['id']);
+  });
+  
+  $.ajax({ 
+    type: "PUT",
+    url: "/experiments/" + gon.experiment.id,
+    data: { 
+      experiment : {
+        colids: new_colids.join(",")
+      }
+    }
+  }).done( function (data) {console.log("updated colids");} );
+
+  window.location.reload()
+}
+
+$(document).ready( function() {
+
+  var graph = 
+    d3.select("#graph").append("svg").attr('class','graphcomponent')
+    .attr("width", 800)
+    .attr("height", 600);
+
+  ids = ['x','y']
+  if (gon.experiment.colids) {
+    ids = gon.experiment.colids.split(",");
+    $.each(ids, function() {
+      $("input#" + this).attr('checked',true);
+    });
+  }
+
+  plot_csv_multiple(graph, 800, 600, gon.particle_ids, gon.particledata, gon.scale, gon.xcolid, gon.experiment.colids, gon.colors, update_selected_display);
+  
+} );
+</script>

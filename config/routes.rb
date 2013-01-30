@@ -1,16 +1,25 @@
 Video::Application.routes.draw do
 
   resources :experiments do
+    member do
+      post 'set_scale'
+    end
+    member do
+      get 'plot'
+    end
     resources :particles do
       member do
         post 'add_datum'
       end
+      member do
+        get 'plot'
+      end
+      member do
+        get 'distance'
+      end
       resources :data
     end
     resources :scales
-    member do
-      post 'set_scale'
-    end
   end
 
   resources :videoclips do
@@ -53,8 +62,8 @@ Video::Application.routes.draw do
   match 'experiments/:id/clicker' => 'experiments#clicker', :as => :experiment_clicker
   #match 'experiments/:id/add_datum' => 'experiments#add_datum'
   #match 'experiments/:id/set_scale' => 'experiments#set_scale'
-  match 'experiments/:experiment_id/plot' => 'data#plot', :as => :experiment_plot
-  match 'experiments/:experiment_id/distance' => 'data#distance', :as => :experiment_distance_plot
+  #match 'experiments/:experiment_id/plot' => 'data#plot', :as => :experiment_plot
+  #match 'experiments/:experiment_id/distance' => 'data#distance', :as => :experiment_distance_plot
 
   match 'test' => 'test#index'
   match 'ajaxtest/:id' => 'application#ajaxtest'

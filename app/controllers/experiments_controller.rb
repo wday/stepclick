@@ -1,4 +1,31 @@
 class ExperimentsController < ApplicationController
+  
+  # GET /experiments/:id/plot
+  def plot
+    @experiment = Experiment.find params[:id]
+    @particles  = @experiment.particles
+    @scale      = @experiment.scale
+    @colids    = ['x','y']
+    @colors    = ['red','blue']
+
+    gon.experiment = @experiment
+    gon.particles  = @particles
+    gon.data       = @particles.first.data
+    gon.particledata = []
+    @particles.each do |p|
+      gon.particledata << p.data
+    end
+    gon.scale        = @scale
+    gon.xcolid       = 'time'
+    gon.colors       = @colors
+    gon.colids       = @colids
+    gon.particle_ids = @particles.collect {|p| "par" + p.id.to_s}
+
+    respond_to do |format|
+      format.html
+    end
+  end
+
   # GET /experiments
   # GET /experiments.json
   def index
@@ -100,6 +127,7 @@ class ExperimentsController < ApplicationController
     
     clip  = @experiment.videoclip
 
+    gon.experiment    = @experiment
     gon.experiment_id = @experiment.id
     gon.particle_id   = @experiment.particles.collect {|p| p.id}
 

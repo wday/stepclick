@@ -21,6 +21,20 @@ end
         <button type=button class="btn btn-primary" id='btn-measure-scale' onclick="start_measuring();">Measure</button> 
       </form>
         <% # TODO only show update button if values are tainted %>
+      <form>
+        <legend>Control</legend>
+        <table class="table table-condensed">
+          <tr class="info"> <td>FPS</td>   <td><%= "%0.2f" % @experiment.videoclip.fpss.to_f %></td></tr>
+          <tr> <td>Frame Skip</td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
+          <tr class="info"> <td><i>Frame</i></td> <td><span id="display-frame"></span></td> </tr>
+          <tr class="info"> <td></i>Time</i></td>  <td><span id="display-time"></span></td>  </tr>
+        </table>
+        <button type=button class=btn id="control-start" onclick="load_start_frame();">start</button>||
+        <button type=button class="btn btn-primary" id="control-previous-skip" onclick="load_previous_frame_skip();" > &lt; &lt; </button>
+        <button type=button class=btn               id="control-previous"      onclick="load_previous_frame_first();"> &lt; </button>
+        <button type=button class=btn               id="control-next"          onclick="load_next_frame_first();"    > &gt; </button>
+        <button type=button class="btn btn-primary" id="control-next-skip"     onclick="load_next_frame_skip();"     >  &gt; &gt; </button>
+      </form>
       <form class="form-inline">
         <legend>Objects</legend>
         <%= select("particle","particle_id", @experiment.particles.collect {|p| [p.name, p.id]}, {:class => 'input-small'}) %>
@@ -29,22 +43,8 @@ end
         <button type=button id="particle-data-csv" class="btn">CSV</button>
         <button type=button id="particle-data-plot" class="btn">Plot</button>        
       </form>
-      <%= link_to 'Add Object', new_experiment_particle_path(@experiment), :class => 'btn btn-primary' %>
-      <hr>
-      <form>
-        <legend>Control</legend>
-        <table class="table table-condensed">
-          <tr> <td>FPS</td>   <td><%= "%0.2f" % @experiment.videoclip.fpss.to_f %></td></tr>
-          <tr> <td>Frame</td> <td><span id="display-frame"></span></td> </tr>
-          <tr> <td>Time</td>  <td><span id="display-time"></span></td>  </tr>
-          <tr> <td><i>Frame skip:</i></td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
-        </table>
-        <button type=button class=btn id="control-start" onclick="load_start_frame();">start</button>||
-        <button type=button class="btn btn-primary" id="control-previous-skip" onclick="load_previous_frame_skip();" > &lt; &lt; </button>
-        <button type=button class=btn               id="control-previous"      onclick="load_previous_frame_first();"> &lt; </button>
-        <button type=button class=btn               id="control-next"          onclick="load_next_frame_first();"    > &gt; </button>
-        <button type=button class="btn btn-primary" id="control-next-skip"     onclick="load_next_frame_skip();"     >  &gt; &gt; </button>
-      </form>
+      <%= link_to 'Add Object', new_experiment_particle_path(@experiment), :class => 'btn' %>
+      <%= link_to 'Plot', plot_experiment_path(@experiment), :class => 'btn btn-primary' %>
     </div>
 
     <div class="span9" id="clicker"> 
@@ -52,3 +52,94 @@ end
     </div>
 
   </div>
+
+<script>
+
+$(document).ready(function() {
+
+  c   = document.getElementById("imgbox"); 
+  ctx = c.getContext("2d");
+
+  scale_start_point = null;
+  scale_end_point   = null;
+
+  scale = {
+    x0: null,
+    y0: null,
+    x1: null,
+    y1: null,
+    length_known: null,
+    units: null
+  };
+
+  cur_framenum = gon.framenum_min;
+
+  is_measuring = false;
+
+  particles = {};
+  
+  scale_length_px = 1;
+  scale_known_distance = 1;
+  scale_known_units = "px";
+
+  experiment_clip_path = gon.clip_path;
+
+  $("#edit-particle").click( function(e) {
+    if ($("#edit-particle").hasClass('active')) {
+      $("#edit-particle").removeClass('active'); // unpress
+      //$("[id^=particle-data]").attr("disabled",true);
+      $("select#particle_particle_id").attr("disabled",false); 
+    } else {
+      $("#edit-particle").addClass('active'); // make it depressed
+      //$("[id^=particle-data]").attr("disabled",false);
+      $("select#particle_particle_id").attr("disabled",true);
+    }
+  });
+
+  // do something smarter here like attaching the route into the object and look up dynamically?
+  $("#particle-data").click( function() {
+    window.location = '/experiments/' + gon.experiment_id + '/particles/' + $("#particle_particle_id").val() + "/data";
+  });
+  $("#particle-data-csv").click( function() {
+    window.location = '/experiments/' + gon.experiment_id + '/particles/' + $("#particle_particle_id").val() + "/data.csv";
+  });
+  $("#particle-data-plot").click( function() {
+    window.location = '/experiments/' + gon.experiment_id + '/particles/' + $("#particle_particle_id").val() + "/plot";
+  });
+  $("#skip-distance").blur( function() {
+    $.ajax( {
+      url: '/experiments/' + gon.experiment_id,
+      type: 'PUT',
+      data: { 
+        experiment: { 
+          frame_skip: $("#skip-distance").val() 
+        } 
+      }
+    }).done(function(){
+      console.log('updated skip distance');
+    });
+  });
+
+  if (gon.experiment.frame_skip) {
+    $("#skip-distance").val(gon.experiment.frame_skip);
+  }
+
+  //$("[id^=particle-data]").attr("disabled",true);
+
+  // HACK
+  $("input").addClass("input-mini");
+  $("select").addClass("input-small");
+
+  $(window).resize(function() {
+    fit_canvas_to_window();
+  });
+
+  $("#imgbox").click(function(e) {
+    click_handler(e); 
+  });
+  
+  ajax_load_data();
+  ajax_load_scale();
+  fit_canvas_to_window(); // this also loads the initial frame
+});
+</script>

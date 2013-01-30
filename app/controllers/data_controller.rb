@@ -1,58 +1,5 @@
 class DataController < ApplicationController
  
-  # GET /experiments/:experiment_id/plot
-  def plot
-    if params.has_key?(:experiment_id)
-      @data      = Datum.where :experiment_id => params[:experiment_id]
-      experiment = Experiment.find params[:experiment_id]
-      scale      = experiment.scale
-      @colids    = ['x','y']
-      @colors    = ['red','blue']
-    else
-      @data = nil
-    end
-    respond_to do |format|
-      if @data
-        gon.data       = scale.get_scaled(@data)
-        gon.experiment = experiment
-        gon.scale      = scale
-        gon.xcolid     = 'time'
-        gon.colors     = @colors
-        gon.colids     = @colids
-        format.html
-      else
-        format.html redirect_to experiment_clicker_path(@data.experiment), :flash => {:error => 'Measure scale before plotting'}
-      end
-    end
-  end
-
-  # GET /experiments/:experiment_id/distance
-  def distance
-    if params.has_key? :experiment_id
-      @data = Datum.where :experiment_id => params[:experiment_id]
-      experiment = Experiment.find params[:experiment_id]
-      scale = experiment.scale
-      @colids = ['dx','dy','total_dx','total_dy','distance','total_distance']
-      @colors = ['red','green','orange','purple','brown','black']
-    else 
-      @data = nil
-    end
-
-    respond_to do |format|
-      if @data
-        gon.data       = ::ExperimentAnalyzer.compute_distance scale.get_scaled(@data)
-        gon.experiment = experiment
-        gon.scale      = scale
-        gon.colids     = @colids
-        gon.xcolid     = 'time'
-        gon.colors     = @colors
-        format.html { render 'plot' }
-      else
-        format.html redirect_to experiment_clicker_path(@data.experiment), :flash => {:error => 'Measure scale before plotting'}
-      end
-    end
-  end
-
   # GET /experiments/:experiment_id/particles/:particle_id/data
   # GET /experiments/:experiment_id/particles/:particle_id/data.json
   def index

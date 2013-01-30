@@ -1,5 +1,50 @@
 class ParticlesController < ApplicationController
 
+  # GET /experiments/:experiment_id/particles/:particle_id/plot
+  def plot
+    @experiment = Experiment.find params[:experiment_id]
+    @particle   = @experiment.particles.find params[:id]
+    @data       = @particle.data
+    @scale      = @experiment.scale
+    @colids    = ['x','y']
+    @colors    = ['red','blue']
+
+    gon.data       = @scale.get_scaled(@data)
+    gon.experiment = @experiment
+    gon.scale      = @scale
+    gon.xcolid     = 'time'
+    gon.colors     = @colors
+    gon.colids     = @colids
+    gon.plot_type  = 'raw'
+
+    respond_to do |format|
+      format.html
+    end
+  end
+
+  # GET /experiments/:experiment_id/particles/:particle_id/distance
+  def distance
+    @experiment = Experiment.find params[:experiment_id]
+    @particle   = @experiment.particles.find params[:id]
+    @data       = @particle.data
+    @scale      = @experiment.scale
+    
+    @colids = ['dx','dy','total_dx','total_dy']
+    @colors = ['red','green','orange','purple','brown','black']
+
+    gon.data       = ::ExperimentAnalyzer.compute_distance @scale.get_scaled(@data)
+    gon.experiment = @experiment
+    gon.scale      = @scale
+    gon.colids     = @colids
+    gon.xcolid     = 'time'
+    gon.colors     = @colors
+    gon.plot_type  = 'distance'
+
+    respond_to do |format|
+      format.html { render 'plot' }
+    end
+  end
+
   # POST /experiments/:experiment_id/particles/:id/add_datum
   def add_datum
     @experiment = Experiment.find params[:experiment_id]

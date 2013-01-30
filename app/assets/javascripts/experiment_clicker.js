@@ -18,6 +18,7 @@ function start_measuring() {
   if ($("#scale-distance-known").val().length == 0 || $("#scale-distance-units").val().length == 0) {
     alert("Please enter the length of the object to be measured");
   } else {
+    is_measuring      = true;
     scale_start_point = null;
     scale_end_point   = null;
     load_frame(cur_framenum);
@@ -86,21 +87,22 @@ function render() {
 
 function render_points(c, ctx) {
   // Render all particle points using their colors
-  $.each( particles, function() {
-    var fill_color = this.color;
-    $.each( this.points, function() {
-      draw_circle(ctx, fill_color, this.px_x(imgwidth), imgheight - this.px_y(imgheight), 7)
-    });
+  $.each( particles, function(i,particle) {
+    if (this.points && this.points.length > 0) {
+      $.each( this.points, function(j,point) {
+        draw_circle(ctx, particle.color, point.px_x(imgwidth), imgheight - point.px_y(imgheight), 7)
+      });
+    }
   });
 }
 
 function draw_circle(ctx, color, x, y, r)  {
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 1;
-  ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2*Math.PI);
-  ctx.fill();
+  //ctx.fillStyle = color;
+  //ctx.fill();
+  ctx.lineWidth   = 2;
+  ctx.strokeStyle = color;
   ctx.closePath();
   ctx.stroke();
 }
@@ -196,8 +198,10 @@ function click_handler(e) {
   } else if (is_measuring && scale_start_point && !scale_end_point) {
     scale_end_point = new DataPoint(0,0,xprime,yprime);
     set_scale();
-  } else if (current_particle_id) {
+  } else if ($("#edit-particle").hasClass("active")) {
     click_handle_particle_point(x,y,xprime,yprime);
+  } else {
+    console.log('no click actions to take in this state');
   }
   render();
 }
@@ -205,7 +209,7 @@ function click_handler(e) {
 function click_handle_particle_point(x,y,xprime,yprime) {
   var curtime = (cur_framenum-1)/fps();
   var pt      = new DataPoint(cur_framenum,curtime,xprime,yprime);
-  var route   = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + '/add_datum/';
+  var route   = '/experiments/' + gon.experiment_id + '/particles/' + $("#particle_particle_id").val() + '/add_datum/';
   $.post(route,
     { datum: { 
         frame: cur_framenum,
@@ -218,10 +222,8 @@ function click_handle_particle_point(x,y,xprime,yprime) {
       console.log('submitted datum: ' + data);
     }
   );
-  // should always be true since click handler for this is only called if true...
-  if (current_particle_id) {
-    particles[current_particle_id].points.push(new DataPoint(cur_framenum, curtime, xprime, yprime));
-  }
+  // NOTE consider if it really is selected since this function was invoked?
+  particles[$("#particle_particle_id").val()].points.push(new DataPoint(cur_framenum, curtime, xprime, yprime));
   if (has_next_frame()) {
     load_next_frame_skip();
   } else {
@@ -274,78 +276,3 @@ function ajax_load_scale() {
     complete: function() { render(); }
   });
 }
-
-$(document).ready(function() {
-
-  c   = document.getElementById("imgbox"); 
-  ctx = c.getContext("2d");
-
-  scale_start_point = null;
-  scale_end_point   = null;
-
-  scale = {
-    x0: null,
-    y0: null,
-    x1: null,
-    y1: null,
-    length_known: null,
-    units: null
-  };
-
-  cur_framenum = gon.framenum_min;
-
-  current_particle_id = undefined;
-  is_measuring = false;
-
-  particles = {};
-  
-  scale_length_px = 1;
-  scale_known_distance = 1;
-  scale_known_units = "px";
-
-  experiment_clip_path = gon.clip_path;
-
-  $("#edit-particle").click( function(e) {
-    if (current_particle_id && $("#edit-particle").hasClass('active')) {
-      current_particle_id = undefined; // stop recording for current particle
-      $("#edit-particle").removeClass('active'); // unpress
-      $("[id^=particle-data]").attr("disabled",true); // enable
-      $("select#particle_particle_id").attr("disabled",false); 
-    } else {
-      current_particle_id = $("#particle_particle_id").val();
-      $("#edit-particle").addClass('active'); // make it depressed
-      $("[id^=particle-data]").attr("disabled",false);
-      $("select#particle_particle_id").attr("disabled",true);
-    }
-  });
-
-  // do something smarter here like attaching the route into the object and look up dynamically?
-  $("#particle-data").click( function() {
-    window.location = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + "/data";
-  });
-  $("#particle-data-csv").click( function() {
-    window.location = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + "/data.csv";
-  });
-  $("#particle-data-plot").click( function() {
-    window.location = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + "/plot";
-  });
-
-  $("[id^=particle-data]").attr("disabled",true); // disabled initially
-
-  // HACK
-  $("input").addClass("input-mini");
-  $("select").addClass("input-small");
-
-  $(window).resize(function() {
-    fit_canvas_to_window();
-  });
-
-  $("#imgbox").click(function(e) {
-    click_handler(e); 
-  });
-  
-  ajax_load_data();
-  ajax_load_scale();
-  fit_canvas_to_window(); // this also loads the initial frame
-});
-
