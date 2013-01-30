@@ -1,14 +1,10 @@
-<%
-experiment = @data.first.experiment
-scale = experiment.scale
-%>
-
+  <p> Data for object: <b> <%= @particle.name %> </p>
   <table class=table>
     <tr>
       <th>Frame</th>
       <th>Time (s)</th>
-      <th>X ( <%= scale.measured_units %> ) </th>
-      <th>Y ( <%= scale.measured_units %> ) </th>
+      <th>X ( <%= @scale.measured_units %> ) </th>
+      <th>Y ( <%= @scale.measured_units %> ) </th>
       <th></th>
       <th></th>
       <th></th>
@@ -18,11 +14,11 @@ scale = experiment.scale
     <tr>
       <td><%= datum.frame %></td>
       <td><%= "%0.3f" % datum.time %></td>
-      <td><%= "%0.3f" % scale.x(datum.x) %></td>
-      <td><%= "%0.3f" % scale.y(datum.y) %></td>
+      <td><%= "%0.3f" % @scale.x(datum.x) %></td>
+      <td><%= "%0.3f" % @scale.y(datum.y) %></td>
     </tr>
   <% end %>
   </table>
 
 <%= link_to 'Export Data to File', 'data.csv', :class => 'btn' %>
-<%= link_to 'Plot', experiment_plot_path(experiment), :class => 'btn' %>
+<%= link_to 'Plot', experiment_plot_path(@experiment), :class => 'btn' %>

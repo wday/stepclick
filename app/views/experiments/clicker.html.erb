@@ -1,18 +1,7 @@
 <%= javascript_include_tag 'strlib' %>
 <%= javascript_include_tag 'clicker' %>
-<%= javascript_include_tag 'experiment_clicker' %>
 
-<% 
-  clip = @experiment.videoclip
-  frame = clip.frames.order("framenum ASC").first
-  framenum_min = frame.framenum
-  framenum_max = clip.frames.order("framenum DESC").first.framenum
-  clip_path = File.join("../../../","data","video",clip.path)
-  frame_path = File.join("frame", "%04d.jpg" % frame.framenum)
-  imgurl = File.join(clip_path, frame_path)
-
-	fps = clip.fpss.to_f
-%>
+<% # why don't I have to use javascript_include_tag 'experiment_clicker' here?? %>
 
 <% #TODO make this generic 
 if flash[:error] %>
@@ -26,35 +15,36 @@ end
   <div class="row-fluid">
 
     <div class="span3">
-      <h4>Size Scale</h2>
-      <p> Enter the known length of something in the image (i.e. a meter stick) </p>
-      <table class=table>
-        <tr>
-          <td>Length:</td>
-          <td><input id='scale-distance-known' type=textbox value=""></input></td>
-        </tr>
-        <tr>
-          <td>Units:</td>
-          <td><input id='scale-distance-units' type=textbox value=""></input></td>
-        </tr>
-      </table>
-      <p> Measure the length of the object on the screen </p>
-      <button class=btn id='btn-measure-scale' onclick="start_measuring();">Measure</button> 
-      <button class=btn id='btn-set-scale' onclick="set_scale();">Save</button>
-      <h4>Time Control</h4>
-      <p> For videos longer than a few seconds it is convenient to use a frame skip > 1 </p>
-      <table class=table>
-        <tr> <td>Frame</td> <td><span id="display-frame"></span></td> </tr>
-        <tr> <td>Time</td>  <td><span id="display-time"></span></td>  </tr>
-        <tr> <td><i>Frame skip:</i></td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
-      </table>
-      <button class=btn id="control-start" onclick="load_start_frame();">start</button>||
-      <button class=btn id="control-previous" onclick="load_previous_frame();">previous</button>
-      <button class=btn id="control-next" onclick="load_next_frame();">next</button><br />
-      <h4>Data</h4>
-      <%= link_to 'View Data', experiment_data_path(@experiment), :class => 'btn' %>
-      <%= link_to 'Plot Data', experiment_plot_path(@experiment), :class => 'btn' %>
-      </ul>
+      <form class="form-inline">
+        <legend>Scale</legend>
+        <input id='scale-distance-known' type=textbox placeholder="length"></input><input id='scale-distance-units' type=textbox placeholder="unit"></input>
+        <button type=button class="btn btn-primary" id='btn-measure-scale' onclick="start_measuring();">Measure</button> 
+      </form>
+        <% # TODO only show update button if values are tainted %>
+      <form class="form-inline">
+        <legend>Objects</legend>
+        <%= select("particle","particle_id", @experiment.particles.collect {|p| [p.name, p.id]}, {:class => 'input-small'}) %>
+        <button type=button id="edit-particle" class="btn">Edit</button>
+        <button type=button id="particle-data" class="btn">Data</button>
+        <button type=button id="particle-data-csv" class="btn">CSV</button>
+        <button type=button id="particle-data-plot" class="btn">Plot</button>        
+      </form>
+      <%= link_to 'Add Object', new_experiment_particle_path(@experiment), :class => 'btn btn-primary' %>
+      <hr>
+      <form>
+        <legend>Control</legend>
+        <table class="table table-condensed">
+          <tr> <td>FPS</td>   <td><%= "%0.2f" % @experiment.videoclip.fpss.to_f %></td></tr>
+          <tr> <td>Frame</td> <td><span id="display-frame"></span></td> </tr>
+          <tr> <td>Time</td>  <td><span id="display-time"></span></td>  </tr>
+          <tr> <td><i>Frame skip:</i></td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
+        </table>
+        <button type=button class=btn id="control-start" onclick="load_start_frame();">start</button>||
+        <button type=button class="btn btn-primary" id="control-previous-skip" onclick="load_previous_frame_skip();" > &lt; &lt; </button>
+        <button type=button class=btn               id="control-previous"      onclick="load_previous_frame_first();"> &lt; </button>
+        <button type=button class=btn               id="control-next"          onclick="load_next_frame_first();"    > &gt; </button>
+        <button type=button class="btn btn-primary" id="control-next-skip"     onclick="load_next_frame_skip();"     >  &gt; &gt; </button>
+      </form>
     </div>
 
     <div class="span9" id="clicker"> 
@@ -62,52 +52,3 @@ end
     </div>
 
   </div>
-
-<script>
-$(document).ready(function() {
-
-  c   = document.getElementById("imgbox"); 
-  ctx = c.getContext("2d");
-
-  experiment_id = <%= @experiment.id %>;
-  framenum_min = <%= framenum_min %>;
-  framenum_max = <%= framenum_max %>;
-  initial_fps = <%= fps %>;
-
-  is_measuring = 0;
-  is_recording = 1;
-
-  scale_start_point = null;
-  scale_end_point = null;
-
-  scale = {
-    x0: null,
-    y0: null,
-    x1: null,
-    y1: null,
-    length_known: null,
-    units: null
-  };
-
-  cur_framenum = framenum_min;
-
-  points = Array();
-
-  scale_length_px = 1;
-  scale_known_distance = 1;
-  scale_known_units = "px";
-
-  experiment_clip_path = "<%= clip.path %>";
-
-  $(window).resize(function() {
-    fit_canvas_to_window();
-  });
-
-  $("#imgbox").click(function(e) { 
-    click_handler(e); 
-  });
-  
-  ajax_load_data();
-  console.log("done initializing");
-});
-</script>

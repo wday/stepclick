@@ -15,6 +15,8 @@ class ExperimentsController < ApplicationController
   def show
     @experiment = Experiment.find(params[:id])
 
+    gon.test = 'testing'
+
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @experiment }
@@ -95,20 +97,25 @@ class ExperimentsController < ApplicationController
   # GET /experiments/:id/clicker
   def clicker
     @experiment = Experiment.find(params[:id])
+    
+    clip  = @experiment.videoclip
+
+    gon.experiment_id = @experiment.id
+    gon.particle_id   = @experiment.particles.collect {|p| p.id}
+
+    # HACK
+    gon.particle_colors = @experiment.particles.collect{|p| [p.id, p.color_name]}.inject({}){ |r,el| r[el.first] = el.last; r }
+
+    gon.framenum_min = clip.frames.order("framenum ASC").first.framenum
+    gon.framenum_max = clip.frames.order("framenum DESC").first.framenum
+    gon.clip_path    = File.join("../../../","data","video",clip.path)
+    gon.frame_path   = File.join("frame", "%04d.jpg" % gon.framenum_min)
+    gon.imgurl       = File.join(gon.clip_path, gon.frame_path)
+    gon.fps          = clip.fpss.to_f
+
     respond_to do |format|
       format.html # experiments/clicker.html.erb
       format.json { head :no_content }
-    end
-  end
-
-  # POST /experiments/:id/add_datum
-  def add_datum
-    @experiment = Experiment.find(params[:id])
-    @datum = Datum.new(params[:datum])
-    @datum.experiment = @experiment
-    @datum.save
-    respond_to do |format|
-      format.xml { render :inline => "<xml><status>OK</status></xml>" }
     end
   end
 

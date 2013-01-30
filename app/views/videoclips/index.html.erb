@@ -10,6 +10,7 @@
         <tr>
           <th>Name</th>
     			<th>FPS</th>
+          <th>Control</th>
         </tr>
 
       <% @videoclips.each do |videoclip| %>
@@ -17,16 +18,18 @@
         <tr>
           <td><%= videoclip.name %></td>
     			<td><%= videoclip.fpss %></td>
-          <td><%= link_to 'Edit Information', '/videoclips/' + videoclip.id.to_s + '/edit', :class => 'btn' %>
-          <td><%= if not (videoclip.is_processed == 1)
-                    link_to 'Process', create_frames_videoclip_path(videoclip), :class => 'btn'
+          <td>
+            <%= if not (videoclip.is_processed == 1)
+                    link_to 'Process', create_frames_videoclip_path(videoclip), :class => 'btn btn-info'
                   else
-                    link_to 'Start Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment", :class => 'btn'
-                  end %>
-    			</td>
-          <td><%= link_to 'Play', "videoclips/" + videoclip.id.to_s + "/play", :class => 'btn' %> </td>
-          <td><%= if not (videoclip._is_removed == 1)
-    								link_to 'Remove',  videoclip, :confirm => 'Are you sure?', :method => :delete, :class => 'btn'
+                    link_to 'New Experiment', "videoclips/" + videoclip.id.to_s + "/start_experiment", :class => 'btn btn-primary'
+                  end %> 
+            <%= link_to 'Edit Information', '/videoclips/' + videoclip.id.to_s + '/edit', :class => 'btn' %> 
+            <%= link_to 'Play', "videoclips/" + videoclip.id.to_s + "/play", :class => 'btn' %>
+          </td>
+          <td>
+            <%= if not (videoclip._is_removed == 1)
+    								link_to 'Remove',  videoclip, :confirm => 'Are you sure?', :method => :delete, :class => 'btn btn-inverse'
     							end%>
     			</td>
         </tr>

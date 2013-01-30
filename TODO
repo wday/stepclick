@@ -1,3 +1,11 @@
+[2013-01-29] Adding particle tracking object models
+
+Refactored data from experiment -< data to experiment -< particles -< data to allow for multiple objects in an experiment. To facilitate working with this, I added a selector into the clicker page. This has one option for a selected particle (Object) at this point, but ideally something like this would be nice:
+
+    (  Object ID  ) [Edit v]
+
+where the  v  dropdown gives options to clear, remove, etc. This seems easy to add on later with bootstrap.
+
 [2013-01-17] Refactoring the data model
 
 Data are now owned by an experiment thus we can do

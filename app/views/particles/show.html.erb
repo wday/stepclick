@@ -1,0 +1,25 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Experiment:</b>
+  <%= @particle.experiment_id %>
+</p>
+
+<p>
+  <b>Name:</b>
+  <%= @particle.name %>
+</p>
+
+<p>
+  <b>Mass:</b>
+  <%= @particle.mass %>
+</p>
+
+<p>
+  <b>Color name:</b>
+  <%= @particle.color_name %>
+</p>
+
+
+<%= link_to 'Edit', edit_particle_path(@particle) %> |
+<%= link_to 'Back', particles_path %>

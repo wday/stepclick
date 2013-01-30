@@ -6,18 +6,19 @@
     <table class=table>
       <tr>
         <th>Title</th>
-        <th>Description</th>
         <th>Videoclip</th>
+        <th>Control</th>
       </tr>
 
     <% @experiments.each do |experiment| %>
       <tr>
         <td><%= experiment.title %></td>
-        <td><%= experiment.description %></td>
         <td><%= experiment.videoclip.name %></td>
-        <td><%= link_to 'Edit Information', edit_experiment_path(experiment), :class => 'btn' %></td>
-        <td><%= link_to 'Analyze Video', 'experiments/' + experiment.id.to_s + '/clicker', :class => 'btn' %></td>
-        <td><%= link_to 'Remove', experiment, confirm: 'Are you sure?', method: :delete, :class => 'btn' %></td>
+        <td>
+          <%= link_to 'Open', 'experiments/' + experiment.id.to_s + '/clicker', :class => 'btn btn-primary' %>
+          <%= link_to 'Edit Information', edit_experiment_path(experiment), :class => 'btn' %>
+        </td>
+        <td><%= link_to 'Remove', experiment, confirm: 'Are you sure?', method: :delete, :class => 'btn btn-inverse' %></td>
       </tr>
     <% end %>
     </table>

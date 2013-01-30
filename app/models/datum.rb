@@ -1,3 +1,3 @@
 class Datum < ActiveRecord::Base
-	belongs_to :experiment
+	belongs_to :particle
 end

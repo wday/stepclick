@@ -53,28 +53,22 @@ class DataController < ApplicationController
     end
   end
 
-  # GET /data
-  # GET /data.json
-  # TODO accept ?argument to determine whether to render raw or scaled results
+  # GET /experiments/:experiment_id/particles/:particle_id/data
+  # GET /experiments/:experiment_id/particles/:particle_id/data.json
   def index
 
-    if params.has_key?(:experiment_id)
-      @data = Datum.where :experiment_id => params[:experiment_id]
-    else
-      render :bad_request
-    end
+    @experiment = Experiment.find params[:experiment_id]
+    @particle   = @experiment.particles.find params[:particle_id]
+    @data       = @particle.data
+    @scale      = @experiment.scale
 
     respond_to do |format|
-      if not @data.empty? and @data.first.experiment.scale.nil? 
+      if not @data.empty? and @experiment.scale.nil? 
         format.html { 
-          redirect_to experiment_clicker_path(@data.first.experiment), :flash => {:error => 'Measure scale before viewing data'} 
+          redirect_to experiment_clicker_path(@experiment), :flash => {:error => 'Measure scale before viewing data'} 
         }
       else
-        if not @data.empty?
-          format.html
-        else
-          redirect_to experiments_path
-        end
+        format.html
         format.json { render json: @data }
         format.csv {
           # TODO add helper method to Datum class results = Datum::to_results(data)
@@ -83,8 +77,8 @@ class DataController < ApplicationController
             results << { 
               "frame" => datum.frame,
               "time (s)" => datum.time,
-              "x (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.x(datum.x), 
-              "y (" + datum.experiment.scale.measured_units + ")" => datum.experiment.scale.y(datum.y),
+              "x (" + @scale.measured_units + ")" => @scale.x(datum.x), 
+              "y (" + @scale.measured_units + ")" => @scale.y(datum.y),
             }
           }
           render 'shared/csvtable', :locals => { :results => results }

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130121204625) do
+ActiveRecord::Schema.define(:version => 20130129220101) do
 
   create_table "analyzers", :force => true do |t|
     t.datetime "created_at", :null => false
@@ -35,9 +35,9 @@ ActiveRecord::Schema.define(:version => 20130121204625) do
     t.float    "time"
     t.float    "x"
     t.float    "y"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-    t.integer  "experiment_id"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+    t.integer  "particle_id"
   end
 
   create_table "experiments", :force => true do |t|
@@ -61,6 +61,15 @@ ActiveRecord::Schema.define(:version => 20130121204625) do
   end
 
   add_index "frames", ["videoclip_id"], :name => "index_frames_on_videoclip_id"
+
+  create_table "particles", :force => true do |t|
+    t.integer  "experiment_id"
+    t.string   "name"
+    t.float    "mass"
+    t.string   "color_name"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
 
   create_table "results", :force => true do |t|
     t.text     "notes"

@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  experiment_id: 1
+  name: MyString
+  mass: 1.5
+  color_name: MyString
+
+two:
+  experiment_id: 1
+  name: MyString
+  mass: 1.5
+  color_name: MyString

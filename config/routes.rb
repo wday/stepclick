@@ -1,8 +1,16 @@
 Video::Application.routes.draw do
 
   resources :experiments do
-    resources :data 
+    resources :particles do
+      member do
+        post 'add_datum'
+      end
+      resources :data
+    end
     resources :scales
+    member do
+      post 'set_scale'
+    end
   end
 
   resources :videoclips do
@@ -13,6 +21,12 @@ Video::Application.routes.draw do
 		member do
 			get 'soft_delete'
 		end
+    member do
+      get 'start_experiment'
+    end
+    member do
+      get 'play'
+    end
   end
 
   root :to => 'videoclips#index'
@@ -32,14 +46,13 @@ Video::Application.routes.draw do
   #   match 'products/:id' => 'catalog#view'
   # Keep in mind you can assign values other than :controller and :action
 
-  match 'videoclips/:videoclip_id/clicker' => 'clicker#index'
-  match 'videoclips/:id/start_experiment' => 'videoclips#start_experiment'
-  match 'videoclips/:id/play' => 'videoclips#play'
-  match 'experiments/:id/analyze' => 'experiments#inducks'
+  #match 'videoclips/:id/start_experiment' => 'videoclips#start_experiment'
+  #match 'videoclips/:id/play' => 'videoclips#play'
+  #match 'experiments/:id/analyze' => 'experiments#inducks'
 
   match 'experiments/:id/clicker' => 'experiments#clicker', :as => :experiment_clicker
-  match 'experiments/:id/add_datum' => 'experiments#add_datum'
-  match 'experiments/:id/set_scale' => 'experiments#set_scale'
+  #match 'experiments/:id/add_datum' => 'experiments#add_datum'
+  #match 'experiments/:id/set_scale' => 'experiments#set_scale'
   match 'experiments/:experiment_id/plot' => 'data#plot', :as => :experiment_plot
   match 'experiments/:experiment_id/distance' => 'data#distance', :as => :experiment_distance_plot
 

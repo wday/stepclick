@@ -1,37 +1,32 @@
 var c;
 var ctx;
-var framenum_min; 
-var framenum_max;
-var initial_fps;
-var is_measuring;
 var scale_start_point;
 var scale_end_point;
 var scale;
 var cur_framenum;
-var points;
+var current_particle_id;
+var particles;
 var imgwidth;
 var imgheight;
 var scale_length_px;
 var scale_known_distance;
 var scale_known_units;
-var is_recording;
-var experiment_id;
 var experiment_clip_path;
+var is_measuring;
 
 function start_measuring() {
-  is_measuring = 1;
-  scale_start_point = null;
-  scale_end_point = null;
-  $('#btn-measure-scale').html("click two points");
+  if ($("#scale-distance-known").val().length == 0 || $("#scale-distance-units").val().length == 0) {
+    alert("Please enter the length of the object to be measured");
+  } else {
+    scale_start_point = null;
+    scale_end_point   = null;
+    load_frame(cur_framenum);
+    alert('Click two points of known distance');
+  }
 }
 
-function stop_measuring() {
-  $('#btn-measure-scale').html("start measuring");
-  is_measuring = 0;
-} 
-
 function fps() {
-  return initial_fps;
+  return gon.fps;
 }
 
 function fit_canvas_to_window() {
@@ -75,87 +70,100 @@ function load_frame(framenum) {
     var curtime = (cur_framenum-1)/fps();
     $("#display-time").html(curtime.toFixed(3) + " (s)");
     $("#display-frame").html((cur_framenum-1));
-    render_points();
+    render();
   } 
   cur_framenum = framenum;
   img.src = imgurl;
 
 }
 
-function render_points() {
+function render() {
   var c = document.getElementById("imgbox");
   var ctx = c.getContext("2d");
+  render_points(c,ctx);
+  render_scale(c,ctx);
+}
 
-  var pdata = [];
-  ctx.fillStyle = "yellow";
-
-  $(points).each(function() {
-    ctx.fillRect(this.px_x(imgwidth)-1, imgheight - this.px_y(imgheight) + 1, 3, 3);
-    pdata.push(this.toTuple(scale_known_distance,scale_length_px));
+function render_points(c, ctx) {
+  // Render all particle points using their colors
+  $.each( particles, function() {
+    var fill_color = this.color;
+    $.each( this.points, function() {
+      draw_circle(ctx, fill_color, this.px_x(imgwidth), imgheight - this.px_y(imgheight), 7)
+    });
   });
+}
 
-  ctx.fillStyle = "red";
+function draw_circle(ctx, color, x, y, r)  {
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2*Math.PI);
+  ctx.fill();
+  ctx.closePath();
+  ctx.stroke();
+}
 
-  if( scale_start_point ) {
-    ctx.fillRect(scale_start_point.px_x(imgwidth)-1, imgheight - scale_start_point.px_y(imgheight)+1,3,3);
-  }
-
-  if( scale_end_point ) {
-    ctx.fillRect(scale_end_point.px_x(imgwidth)-1, imgheight - scale_end_point.px_y(imgheight)+1,3,3);
-  }
+function render_scale(c,ctx) {
 
   if( scale_start_point && scale_end_point ) {
     ctx.strokeStyle = "green";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.beginPath()
     ctx.moveTo( scale_start_point.px_x(imgwidth), imgheight - scale_start_point.px_y(imgheight) );
     ctx.lineTo( scale_end_point.px_x(imgwidth), imgheight - scale_end_point.px_y(imgheight) );
     ctx.stroke();
   }
+
+  if( scale_start_point ) {
+    draw_circle(ctx, "red", scale_start_point.px_x(imgwidth), imgheight-scale_start_point.px_y(imgheight),6);
+  }
+
+  if( scale_end_point ) {
+    draw_circle(ctx, "red", scale_end_point.px_x(imgwidth), imgheight-scale_end_point.px_y(imgheight),6);
+  }
   
 }
 
 function load_start_frame() {
-  load_frame(framenum_min);
+  load_frame(gon.framenum_min);
 }
 
-function load_previous_frame() {
-  var frame_skip = Number($('#skip-distance').val());
-  if (cur_framenum - frame_skip >= framenum_min) {
+function load_previous_frame_skip()  { load_previous_frame(Number($('#skip-distance').val())); }
+function load_previous_frame_first() { load_previous_frame(1); }
+function load_previous_frame(frame_skip) {
+  if (cur_framenum - frame_skip >= gon.framenum_min) {
     load_frame(cur_framenum - frame_skip);
   }
 }
-
 function has_previous_frame() {
   var frame_skip = Number($('#skip-distance').val());
-  return cur_framenum - frame_skip >= framenum_min;
+  return cur_framenum - frame_skip >= gon.framenum_min;
 }
 
-function load_next_frame() {
-  console.log("loading next frame");
-  var frame_skip = Number($('#skip-distance').val());
-  if (cur_framenum + frame_skip <= framenum_max ) {
+function load_next_frame_skip()  { load_next_frame(Number($('#skip-distance').val())); }
+function load_next_frame_first() { load_next_frame(1); }
+function load_next_frame(frame_skip) {
+  if (cur_framenum + frame_skip <= gon.framenum_max ) {
     load_frame(cur_framenum + frame_skip);
   }
 }
-
 function has_next_frame() {
   var frame_skip = Number($('#skip-distance').val());
-  return cur_framenum + frame_skip <= framenum_max;
+  return cur_framenum + frame_skip <= gon.framenum_max;
 } 
 
 
-function set_scale_length(l) {
-  scale_length_px = l;
-}
-
 function set_scale() {
+
+  // TODO check to make sure scale_start_point and scale_end_point exist
   scale_length_px      = scale_end_point.distance_to(scale_start_point);
   scale_known_distance = Number($('#scale-distance-known').val());
   scale_known_units    = $('#scale-distance-units').val();
 
   $.post( 
-    "/experiments/" + experiment_id + "/set_scale/",
+    "/experiments/" + gon.experiment_id + "/set_scale/",
     { scale: {
         x0: scale_start_point.x,
         y0: scale_start_point.y,
@@ -169,73 +177,80 @@ function set_scale() {
       console.log("posted scale");
     }
   );
-}
 
-function start_recording() {
-  is_recording = 1;
+  is_measuring = false;
 }
 
 function click_handler(e) {
 
-  // event is in page space, must remap to canvas space
+  // event is in page space, must remap to canvas space [screen -> canvas element]
   var x = 1.0 * (e.pageX - $('#imgbox').offset().left);
   var y = 1.0 * (e.pageY - $('#imgbox').offset().top);
 
-  // normalize to image
+  // normalize to image dimensions [canvas element -> image content]
   var xprime = x / imgwidth;
   var yprime = (imgheight - y) / imgheight; // axis is inverted compared to "science" plot standards
 
-  if (is_measuring) {
-    if (scale_start_point == null) {
-      scale_start_point = new DataPoint(0,0,xprime,yprime);
-      render_points();
-    } else if (scale_end_point == null) {
-      scale_end_point = new DataPoint(0,0,xprime,yprime);
-      render_points();
-      set_scale_length(scale_end_point.distance_to(scale_start_point));
-      stop_measuring();
+  if ( is_measuring && !scale_start_point && !scale_end_point ) {
+    scale_start_point = new DataPoint(0,0,xprime,yprime);
+  } else if (is_measuring && scale_start_point && !scale_end_point) {
+    scale_end_point = new DataPoint(0,0,xprime,yprime);
+    set_scale();
+  } else if (current_particle_id) {
+    click_handle_particle_point(x,y,xprime,yprime);
+  }
+  render();
+}
+
+function click_handle_particle_point(x,y,xprime,yprime) {
+  var curtime = (cur_framenum-1)/fps();
+  var pt      = new DataPoint(cur_framenum,curtime,xprime,yprime);
+  var route   = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + '/add_datum/';
+  $.post(route,
+    { datum: { 
+        frame: cur_framenum,
+        time: curtime,
+        x: xprime,
+        y: yprime }
+    },
+    function(data) {
+      console.log('submitted route: ' + route);
+      console.log('submitted datum: ' + data);
     }
-  } else if (is_recording) {
-    var curtime = (cur_framenum-1)/fps();
-    var pt = new DataPoint(cur_framenum,curtime,xprime,yprime);
-    $.post('/experiments/' + experiment_id + '/add_datum/',
-      { datum: { 
-          frame: cur_framenum,
-          time: curtime,
-          x: xprime,
-          y: yprime }
-      },
-      function(data) {
-        console.log('submitted datum: ' + data);
-      }
-    );
-    points.push(pt);
-    if (has_next_frame()) {
-      load_next_frame();
-    } else {
-      is_recording = 0;
-      render_points();
-    }
+  );
+  // should always be true since click handler for this is only called if true...
+  if (current_particle_id) {
+    particles[current_particle_id].points.push(new DataPoint(cur_framenum, curtime, xprime, yprime));
+  }
+  if (has_next_frame()) {
+    load_next_frame_skip();
   } else {
-    console.log('unexpected click event state');
+    alert('no more frames to track');
   }
 }
 
+// TODO - work with objects, first load object ids and then load data for each object
 function ajax_load_data() {
-  $.ajax( {
-    type: "GET",
-    dataType: "json",
-    url: "/experiments/" + experiment_id + "/data.json",
-    success: function(data) {
-      console.log("received existing data points, n = " + data.length);
+  function make_particle_loader(particle_id) {
+    return function(data) {
+      console.log("received existing data points, n = " + data.length + " for particle_id = " + particle_id);
+      particles[particle_id].points = Array();
+      particles[particle_id].color  = gon.particle_colors[particle_id];
       $.each(data, function() {
         console.log("loading datum: " + this.frame + ", " + this.time + ", " + this.x + ", " + this.y);
-        points.push(new DataPoint(this.frame, this.time, this.x, this.y));
+        particles[particle_id].points.push(new DataPoint(this.frame, this.time, this.x, this.y));
       });
-    },
-    complete: function() {
-      ajax_load_scale();
     }
+  }
+  $.each(gon.particle_id, function() {
+    particles[this] = {}
+    $.ajax( {
+      type: "GET",
+      dataType: "json",
+      url: "/experiments/" + gon.experiment_id + "/particles/" + this + "/data.json",
+      success: make_particle_loader(this),
+      complete: function() { render(); }
+    });
   });
 }
 
@@ -243,7 +258,7 @@ function ajax_load_scale() {
   $.ajax( {
     type: "GET",
     dataType: "json",
-    url: "/experiments/" + experiment_id + "/scales.json",
+    url: "/experiments/" + gon.experiment_id + "/scales.json",
     success: function (data) {
       console.log("received existing scale, n = " + data.length);
       if (data.length > 0) {
@@ -256,12 +271,81 @@ function ajax_load_scale() {
         $("#scale-distance-units").val(s.measured_units);
       }
     },
-    complete: function() { finish_init(); }
+    complete: function() { render(); }
   });
 }
 
-function finish_init() {
-  start_recording();
+$(document).ready(function() {
 
+  c   = document.getElementById("imgbox"); 
+  ctx = c.getContext("2d");
+
+  scale_start_point = null;
+  scale_end_point   = null;
+
+  scale = {
+    x0: null,
+    y0: null,
+    x1: null,
+    y1: null,
+    length_known: null,
+    units: null
+  };
+
+  cur_framenum = gon.framenum_min;
+
+  current_particle_id = undefined;
+  is_measuring = false;
+
+  particles = {};
+  
+  scale_length_px = 1;
+  scale_known_distance = 1;
+  scale_known_units = "px";
+
+  experiment_clip_path = gon.clip_path;
+
+  $("#edit-particle").click( function(e) {
+    if (current_particle_id && $("#edit-particle").hasClass('active')) {
+      current_particle_id = undefined; // stop recording for current particle
+      $("#edit-particle").removeClass('active'); // unpress
+      $("[id^=particle-data]").attr("disabled",true); // enable
+      $("select#particle_particle_id").attr("disabled",false); 
+    } else {
+      current_particle_id = $("#particle_particle_id").val();
+      $("#edit-particle").addClass('active'); // make it depressed
+      $("[id^=particle-data]").attr("disabled",false);
+      $("select#particle_particle_id").attr("disabled",true);
+    }
+  });
+
+  // do something smarter here like attaching the route into the object and look up dynamically?
+  $("#particle-data").click( function() {
+    window.location = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + "/data";
+  });
+  $("#particle-data-csv").click( function() {
+    window.location = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + "/data.csv";
+  });
+  $("#particle-data-plot").click( function() {
+    window.location = '/experiments/' + gon.experiment_id + '/particles/' + current_particle_id + "/plot";
+  });
+
+  $("[id^=particle-data]").attr("disabled",true); // disabled initially
+
+  // HACK
+  $("input").addClass("input-mini");
+  $("select").addClass("input-small");
+
+  $(window).resize(function() {
+    fit_canvas_to_window();
+  });
+
+  $("#imgbox").click(function(e) {
+    click_handler(e); 
+  });
+  
+  ajax_load_data();
+  ajax_load_scale();
   fit_canvas_to_window(); // this also loads the initial frame
-}
+});
+
