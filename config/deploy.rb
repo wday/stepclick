@@ -53,7 +53,7 @@ namespace :deploy do
   		run "cd #{deploy_to}; [[ -f tmp/pids/passenger.3090.pid ]] && kill $(cat tmp/pids/passenger.3090.pid) || echo not running"
   		run "cd #{deploy_to}; rake assets:clean"
         # HACK since migration is generating this in the effective 'current'
-        run "dc #{deploy_to}; git checkout -- db/schema.rb"
+        run "cd #{deploy_to}; git checkout -- db/schema.rb"
   		run "cd #{deploy_to}; git pull -u origin bootstrap"
   		migrate_production
   		install_gems
