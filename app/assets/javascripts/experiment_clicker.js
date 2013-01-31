@@ -240,6 +240,7 @@ function click_handle_particle_point(x,y,xprime,yprime) {
   } else {
     //alert('no more frames to track');
     $("#edit-particle").removeClass("active");
+    $("select#particle_particle_id").attr("disabled",false); 
     load_start_frame();
   }
 }
