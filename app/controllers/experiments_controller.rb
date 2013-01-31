@@ -5,24 +5,52 @@ class ExperimentsController < ApplicationController
     @experiment = Experiment.find params[:id]
     @particles  = @experiment.particles
     @scale      = @experiment.scale
-    @colids    = ['x','y']
-    @colors    = ['red','blue']
+    @colids     = ["x","y"]
 
     gon.experiment = @experiment
     gon.particles  = @particles
     gon.data       = @particles.first.data
     gon.particledata = []
     @particles.each do |p|
-      gon.particledata << p.data
+      gon.particledata << @scale.get_scaled(p.data)
     end
     gon.scale        = @scale
     gon.xcolid       = 'time'
-    gon.colors       = @colors
-    gon.colids       = @colids
+    gon.colors       = @particles.collect {|p| p.color_name }
     gon.particle_ids = @particles.collect {|p| "par" + p.id.to_s}
+    gon.all_colids   = @colids
+    gon.colids_json  = @experiment.colids
+    gon.colid_storage_column = 'colids' #HACK column to store selected columns in db
 
     respond_to do |format|
       format.html
+    end
+  end
+
+  # GET /experiments/:id/plot
+  def distance
+    @experiment = Experiment.find params[:id]
+    @particles  = @experiment.particles
+    @scale      = @experiment.scale
+    @colids     = ["dx","dy"]
+
+    gon.experiment = @experiment
+    gon.particles  = @particles
+    gon.data       = @particles.first.data
+    gon.particledata = []
+    @particles.each do |p|
+      gon.particledata << ::ExperimentAnalyzer.compute_distance(@scale.get_scaled(p.data))
+    end
+    gon.scale        = @scale
+    gon.xcolid       = 'time'
+    gon.colors       = @particles.collect {|p| p.color_name }
+    gon.particle_ids = @particles.collect {|p| "par" + p.id.to_s}
+    gon.all_colids   = @colids
+    gon.colids_json  = @experiment.distance_colids
+    gon.colid_storage_column = 'distance_colids' # HACK where to store saved column views
+
+    respond_to do |format|
+      format.html {render 'plot'}
     end
   end
 

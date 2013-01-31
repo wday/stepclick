@@ -22,7 +22,16 @@ function start_measuring() {
     scale_start_point = null;
     scale_end_point   = null;
     load_frame(cur_framenum);
-    alert('Click two points of known distance');
+    alert('Click two points ' + $("#scale-distance-known").val() + " " + $("#scale-distance-units").val() + " apart");
+  }
+}
+
+function validate_fps() {
+  if ($("#fps").val() <= 0) {
+    alert("FPS May not have been read correctly!");
+  } else {
+    ; // do nothing, would be nice to highlight on error and unhighlight when fixed
+      // but most obvious way to do that is to put in bootstrap control group...
   }
 }
 
@@ -79,10 +88,12 @@ function load_frame(framenum) {
 }
 
 function render() {
-  var c = document.getElementById("imgbox");
-  var ctx = c.getContext("2d");
-  render_points(c,ctx);
-  render_scale(c,ctx);
+  if (!$("#edit-particle").hasClass('active')) {
+    var c = document.getElementById("imgbox");
+    var ctx = c.getContext("2d");
+    render_points(c,ctx);
+    render_scale(c,ctx);
+  }
 }
 
 function render_points(c, ctx) {
@@ -227,7 +238,9 @@ function click_handle_particle_point(x,y,xprime,yprime) {
   if (has_next_frame()) {
     load_next_frame_skip();
   } else {
-    alert('no more frames to track');
+    //alert('no more frames to track');
+    $("#edit-particle").removeClass("active");
+    load_start_frame();
   }
 }
 

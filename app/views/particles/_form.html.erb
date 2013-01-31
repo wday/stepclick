@@ -21,7 +21,7 @@
   </div>
   <div class="field">
     <%= f.label :color_name %><br />
-    <%= f.text_field :color_name %>
+    <%= f.select :color_name, options_for_select([["Black","Black"],["Silver","Silver"],["Gray","Gray"],["Red","Red"],["Green","Green"],["Blue","Blue"],["Orange","Orange"],["Purple","Purple"],["Brown","Brown"],["Maroon","Maroon"],["Teal","Teal"],["Olive","Olive"]]) %>
   </div>
   <div class="actions">
     <%= f.submit %>

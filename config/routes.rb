@@ -7,6 +7,9 @@ Video::Application.routes.draw do
     member do
       get 'plot'
     end
+    member do 
+      get 'distance'
+    end
     resources :particles do
       member do
         post 'add_datum'

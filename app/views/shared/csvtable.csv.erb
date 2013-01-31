@@ -1,6 +1,6 @@
-<%	if not results.empty? %>
-<%=		CSV.generate_line results.first.keys, :row_sep => "" %>
-<% 		results.each do |row| %>
-<%= 		CSV.generate_line(row.values, :row_sep => "").html_safe %>
-<% 		end %>
-<%= end %>
+<%if not results.empty? %>
+<%= CSV.generate_line results.first.keys, :row_sep => "" %>
+<% results.each do |row| %>
+<%= CSV.generate_line(row.values, :row_sep => "").html_safe %>
+<% end %>
+<% end %>

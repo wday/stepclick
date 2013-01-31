@@ -1,8 +1,6 @@
 <%= javascript_include_tag 'strlib' %>
 <%= javascript_include_tag 'clicker' %>
 
-<% # why don't I have to use javascript_include_tag 'experiment_clicker' here?? %>
-
 <% #TODO make this generic 
 if flash[:error] %>
 <div class=row-fluid>
@@ -24,7 +22,7 @@ end
       <form>
         <legend>Control</legend>
         <table class="table table-condensed">
-          <tr class="info"> <td>FPS</td>   <td><%= "%0.2f" % @experiment.videoclip.fpss.to_f %></td></tr>
+          <tr> <td>FPS</td>       <td> <input id="fps" value="<%= "%0.2f" % @experiment.videoclip.fpss.to_f %>"></input></td></tr>
           <tr> <td>Frame Skip</td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
           <tr class="info"> <td><i>Frame</i></td> <td><span id="display-frame"></span></td> </tr>
           <tr class="info"> <td></i>Time</i></td>  <td><span id="display-time"></span></td>  </tr>
@@ -41,7 +39,6 @@ end
         <button type=button id="edit-particle" class="btn">Edit</button>
         <button type=button id="particle-data" class="btn">Data</button>
         <button type=button id="particle-data-csv" class="btn">CSV</button>
-        <button type=button id="particle-data-plot" class="btn">Plot</button>        
       </form>
       <%= link_to 'Add Object', new_experiment_particle_path(@experiment), :class => 'btn' %>
       <%= link_to 'Plot', plot_experiment_path(@experiment), :class => 'btn btn-primary' %>
@@ -103,9 +100,6 @@ $(document).ready(function() {
   $("#particle-data-csv").click( function() {
     window.location = '/experiments/' + gon.experiment_id + '/particles/' + $("#particle_particle_id").val() + "/data.csv";
   });
-  $("#particle-data-plot").click( function() {
-    window.location = '/experiments/' + gon.experiment_id + '/particles/' + $("#particle_particle_id").val() + "/plot";
-  });
   $("#skip-distance").blur( function() {
     $.ajax( {
       url: '/experiments/' + gon.experiment_id,
@@ -119,12 +113,28 @@ $(document).ready(function() {
       console.log('updated skip distance');
     });
   });
+  $("#fps").blur( function() {
+    $.ajax( {
+      url: '/videoclips/' + gon.experiment.videoclip_id,
+      type: 'PUT',
+      data: { 
+        videoclip: { 
+          fps: Number($("#fps").val()),
+          fpss: $("#fps").val()
+        } 
+      }
+    }).done(function(){
+      validate_fps();
+      console.log('updated skip distance');
+    });
+  });
 
   if (gon.experiment.frame_skip) {
     $("#skip-distance").val(gon.experiment.frame_skip);
   }
 
   //$("[id^=particle-data]").attr("disabled",true);
+  validate_fps();
 
   // HACK
   $("input").addClass("input-mini");

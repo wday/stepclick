@@ -70,6 +70,7 @@ function plot_csv_multiple(graph, w, h, idprefix, csv, scale, xcolid, ycolids, c
       viz.append("svg:path")
         .data(csv)
         .style("stroke",colors[j])
+        .attr("class", idprefix[j] + "path_" + ycolids[i])
         .attr("d", line[i](el));
     }
   });
@@ -211,15 +212,15 @@ function plot_csv_multiple(graph, w, h, idprefix, csv, scale, xcolid, ycolids, c
       .attr("transform", "rotate(-90)")
       .text("Position (" + units + ")");
 
-  for (var i = 0; i < idprefix.length; i++) {
-    graph.append("text")
-      .attr("class", "leg y")
-      .attr("text-anchor", "start")
-      .attr("x", m+m/4)
-      .attr("y", m+16*i)
-      .text(idprefix[i])
-      .style("stroke",colors[i]);
-  }
+  // for (var i = 0; i < idprefix.length; i++) {
+  //   graph.append("text")
+  //     .attr("class", "leg y")
+  //     .attr("text-anchor", "start")
+  //     .attr("x", m+m/4)
+  //     .attr("y", m+16*i)
+  //     .text(idprefix[i])
+  //     .style("stroke",colors[i]);
+  // }
 
   return {"xmap": xmap, "ymap": ymap, "line": line}
 }
