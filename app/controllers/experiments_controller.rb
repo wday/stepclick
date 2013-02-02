@@ -115,15 +115,22 @@ class ExperimentsController < ApplicationController
   def update
     @experiment = Experiment.find(params[:id])
 
-    respond_to do |format|
-      if @experiment.update_attributes(params[:experiment])
-        format.html { redirect_to '/experiments/' + @experiment.id.to_s + '/clicker', notice: 'Experiment was successfully updated.' }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @experiment.errors, status: :unprocessable_entity }
-      end
+    if @experiment.update_attributes(params[:experiment])
+      render :inline => "<xml><status>OK</status></xml>"
+    else
+      render :inline => "<xml><status>ERROR</status></xml>"
     end
+
+    # respond_to do |format|
+    #   if @experiment.update_attributes(params[:experiment])
+    #     format.html { redirect_to '/experiments/' + @experiment.id.to_s + '/clicker', notice: 'Experiment was successfully updated.' }
+    #     format.json { head :no_content }
+    #     format.xml  { head :no_content }
+    #   else
+    #     format.html { render action: "edit" }
+    #     format.json { render json: @experiment.errors, status: :unprocessable_entity }
+    #   end
+    # end
   end
 
   # DELETE /experiments/1

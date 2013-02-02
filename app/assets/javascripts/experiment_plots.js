@@ -31,14 +31,13 @@ function update_plot() {
 }
 
 function show_selected_plots() {
-  $("svg [class^=par]").hide();
-  $("svg [class^=par]").hide();
+  $("svg [class^=par]").animate( {opacity: 0}, 250 );
 
   $.each( gon.colids, function(particle_id,column_ids) {
     $.each(column_ids, function(j,id) {
       $("input[particle_id=" + particle_id + "][id=" + id + "]").attr('checked',true);
-      $("svg [class=par" + particle_id + "circle_" + id + "]").show(1000);
-      $("svg [class=par" + particle_id + "path_" + id + "]").show(1000);
+      $("svg [class=par" + particle_id + "circle_" + id + "]").animate( {opacity: 1}, 1000 );
+      $("svg [class=par" + particle_id + "path_" + id + "]").animate( {opacity: 1}, 1000);
     });
   });
 }

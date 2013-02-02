@@ -30,8 +30,12 @@ namespace :deploy do
 
 	set :use_sudo, false
 
-	task :start do ; end
-	task :stop do ; end
+	task :start do
+  		run "cd #{deploy_to}; passenger start -eproduction -p 3090 -d"
+    end
+	task :stop do 
+  		run "cd #{deploy_to}; [[ -f tmp/pids/passenger.3090.pid ]] && kill $(cat tmp/pids/passenger.3090.pid) || echo not running"
+    end
 
 	task :restart do
 		run "cd #{deploy_to}; touch tmp/restart.txt"
@@ -60,6 +64,8 @@ namespace :deploy do
   		run "cd #{deploy_to}; rake assets:precompile"
   		run "cd #{deploy_to}; passenger start -eproduction -p 3090 -d"
   	end
+
+
 
   	desc "migrate remote db"
   	task :migrate_production do
