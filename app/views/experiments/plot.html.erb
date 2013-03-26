@@ -39,7 +39,7 @@ $(document).ready( function() {
 
   gon.colids = JSON.parse(gon.colids_json);
 
-  plot_csv_multiple(graph, 800, 600, gon.particle_ids, gon.particledata, gon.scale, gon.xcolid, gon.all_colids, gon.colors, update_selected_display);
+  plot_csv_multiple(graph, 800, 600, gon.particle_ids, gon.particledata, gon.scale, gon.xcolid, gon.all_colids, gon.colors, update_selected_display, gon.plotconfig);
 
   show_selected_plots();
 });

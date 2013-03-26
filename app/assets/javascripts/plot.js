@@ -1,5 +1,14 @@
-function plot_csv_multiple(graph, w, h, idprefix, csv, scale, xcolid, ycolids, colors, update_selected_view) {
+function plot_csv_multiple(graph, w, h, idprefix, csv, scale, xcolid, ycolids, colors, update_selected_view, plotconfig) {
   var m, raw, graph, hmap, xmap, ymap, line, xmin, xmax, ymin, ymax, units, xcolid, ycolid, xymin, xymax, get_y_raw, get_x_raw;
+
+  if (typeof plotconfig === 'undefined') { plotconfig = {} }
+
+  if (!plotconfig.hasOwnProperty("xlabel")) {
+    plotconfig.xlabel = "Time";
+  }
+  if (!plotconfig.hasOwnProperty("ylabel")) {
+    plotconfig.ylabel = "Position";
+  }
 
   // TODO parameterize this
   m = 64;
@@ -201,7 +210,7 @@ function plot_csv_multiple(graph, w, h, idprefix, csv, scale, xcolid, ycolids, c
       .attr("text-anchor", "middle")
       .attr("x", w/2)
       .attr("y", h-6)
-      .text("Time (s)");
+      .text(plotconfig.xlabel + " (s)");
 
   graph.append("text")
       .attr("class", "y label")
@@ -210,7 +219,7 @@ function plot_csv_multiple(graph, w, h, idprefix, csv, scale, xcolid, ycolids, c
       .attr("x", -h/2)
       .attr("dy", ".75em")
       .attr("transform", "rotate(-90)")
-      .text("Position (" + units + ")");
+      .text(plotconfig.ylabel + " (" + units + ")");
 
   // for (var i = 0; i < idprefix.length; i++) {
   //   graph.append("text")

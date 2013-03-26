@@ -39,6 +39,11 @@ function fps() {
   return gon.fps;
 }
 
+function reset_view() {
+  load_frame(cur_framenum);
+  render();
+}
+
 function fit_canvas_to_window() {
   var c = document.getElementById("imgbox");
   var ctx = c.getContext("2d");
@@ -88,20 +93,29 @@ function load_frame(framenum) {
 }
 
 function render() {
+  var c = document.getElementById("imgbox");
+  var ctx = c.getContext("2d");
   if (!$("#edit-particle").hasClass('active')) {
-    var c = document.getElementById("imgbox");
-    var ctx = c.getContext("2d");
-    render_points(c,ctx);
+    console.log("rendering all particles");
+    render_points(c,ctx, Object.keys(particles), "circles");
     render_scale(c,ctx);
+  } else {
+    console.log("rendering edit particle");
+    render_points(c, ctx, [$("#particle_particle_id").val()], "points");    
   }
 }
 
-function render_points(c, ctx) {
+function render_points(c, ctx, particle_ids, style) {
   // Render all particle points using their colors
-  $.each( particles, function(i,particle) {
-    if (this.points && this.points.length > 0) {
-      $.each( this.points, function(j,point) {
-        draw_circle(ctx, particle.color, point.px_x(imgwidth), imgheight - point.px_y(imgheight), 7)
+  $.each( particle_ids, function(i,id) {
+    console.log('rendering particle: ' + id + ' of ' + particle_ids);
+    if (particles[id].points && particles[id].points.length > 0) {
+      $.each( particles[id].points, function(j,point) {
+        if (style === "circles") {
+          draw_circle(ctx, particles[id].color, point.px_x(imgwidth), imgheight - point.px_y(imgheight), 7);
+        } else if (style === "points") {
+          draw_point (ctx, particles[id].color, point.px_x(imgwidth), imgheight - point.px_y(imgheight));
+        }
       });
     }
   });
@@ -115,6 +129,13 @@ function draw_circle(ctx, color, x, y, r)  {
   ctx.lineWidth   = 2;
   ctx.strokeStyle = color;
   ctx.closePath();
+  ctx.stroke();
+}
+
+function draw_point(ctx, color, x, y)  {
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.rect(x,y,1,1);
   ctx.stroke();
 }
 

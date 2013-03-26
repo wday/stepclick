@@ -12,7 +12,7 @@ class ExperimentsController < ApplicationController
     gon.data       = @particles.first.data
     gon.particledata = []
     @particles.each do |p|
-      gon.particledata << @scale.get_scaled(p.data)
+      gon.particledata << ::ExperimentAnalyzer.compute_normalized_position( @scale.get_scaled(p.data) )
     end
     gon.scale        = @scale
     gon.xcolid       = 'time'
@@ -32,14 +32,14 @@ class ExperimentsController < ApplicationController
     @experiment = Experiment.find params[:id]
     @particles  = @experiment.particles
     @scale      = @experiment.scale
-    @colids     = ["dx","dy"]
+    @colids     = ["distance"]
 
     gon.experiment = @experiment
     gon.particles  = @particles
     gon.data       = @particles.first.data
     gon.particledata = []
     @particles.each do |p|
-      gon.particledata << ::ExperimentAnalyzer.compute_distance(@scale.get_scaled(p.data))
+      gon.particledata << ::ExperimentAnalyzer.compute_distance( @scale.get_scaled(p.data) )
     end
     gon.scale        = @scale
     gon.xcolid       = 'time'
@@ -48,6 +48,10 @@ class ExperimentsController < ApplicationController
     gon.all_colids   = @colids
     gon.colids_json  = @experiment.distance_colids
     gon.colid_storage_column = 'distance_colids' # HACK where to store saved column views
+    gon.plotconfig = {
+      "xlabel" => "Time",
+      "ylabel" => "Distance"
+    }
 
     respond_to do |format|
       format.html {render 'plot'}
