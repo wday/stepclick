@@ -36,7 +36,7 @@ end
       <form class="form-inline">
         <legend>Objects</legend>
         <%= select("particle","particle_id", @experiment.particles.collect {|p| [p.name, p.id]}, {:class => 'input-small'}) %>
-        <button type=button id="edit-particle" class="btn">Edit</button>
+        <button type=button id="edit-particle" class="btn btn-primary">Edit</button>
         <button type=button id="particle-data" class="btn">Data</button>
         <button type=button id="particle-data-csv" class="btn">CSV</button>
       </form>
@@ -91,6 +91,8 @@ $(document).ready(function() {
       //$("[id^=particle-data]").attr("disabled",false);
       $("select#particle_particle_id").attr("disabled",true);
     }
+    reset_view();
+    render();
   });
 
   // do something smarter here like attaching the route into the object and look up dynamically?
