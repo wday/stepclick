@@ -13,39 +13,64 @@ end
   <div class="row-fluid">
 
     <div class="span3">
-      <form class="form-inline">
-        <legend>Scale</legend>
-        <input id='scale-distance-known' type=textbox placeholder="length"></input><input id='scale-distance-units' type=textbox placeholder="unit"></input>
-        <button type=button class="btn btn-primary" id='btn-measure-scale' onclick="start_measuring();">Measure</button> 
-      </form>
+      <table class=table>
+        <tr><th colspan=3>Scale</th></tr>
+        <tr>
+          <td>
+            <input id='scale-distance-known' type=textbox placeholder="length"></input>
+          </td>
+          <td>
+            <input id='scale-distance-units' type=textbox placeholder="unit"></input>
+          </td>
+          <td>
+            <button type=button class="btn btn-primary" id='btn-measure-scale' onclick="start_measuring();">Measure</button>
+          </td>
+        </tr>
+      </table>
         <% # TODO only show update button if values are tainted %>
-      <form>
-        <legend>Control</legend>
-        <table class="table table-condensed">
-          <tr> <td>FPS</td>       <td> <input id="fps" value="<%= "%0.2f" % @experiment.videoclip.fpss.to_f %>"></input></td></tr>
-          <tr> <td>Frame Skip</td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
-          <tr class="info"> <td><i>Frame</i></td> <td><span id="display-frame"></span></td> </tr>
-          <tr class="info"> <td></i>Time</i></td>  <td><span id="display-time"></span></td>  </tr>
-        </table>
-        <button type=button class=btn id="control-start" onclick="load_start_frame();">start</button>||
-        <button type=button class="btn btn-primary" id="control-previous-skip" onclick="load_previous_frame_skip();" > &lt; &lt; </button>
-        <button type=button class=btn               id="control-previous"      onclick="load_previous_frame_first();"> &lt; </button>
-        <button type=button class=btn               id="control-next"          onclick="load_next_frame_first();"    > &gt; </button>
-        <button type=button class="btn btn-primary" id="control-next-skip"     onclick="load_next_frame_skip();"     >  &gt; &gt; </button>
-      </form>
-      <form class="form-inline">
-        <legend>Objects</legend>
-        <%= select("particle","particle_id", @experiment.particles.collect {|p| [p.name, p.id]}, {:class => 'input-small'}) %>
-        <button type=button id="edit-particle" class="btn btn-primary">Edit</button>
-        <button type=button id="particle-data" class="btn">Data</button>
-        <button type=button id="particle-data-csv" class="btn">CSV</button>
-      </form>
-      <%= link_to 'Add Object', new_experiment_particle_path(@experiment), :class => 'btn' %>
-      <%= link_to 'Plot', plot_experiment_path(@experiment), :class => 'btn btn-primary' %>
+      <table class=table>
+        <tr><th colspan=2>Control</th></tr>
+        <tr> <td>FPS</td>       <td> <input id="fps" value="<%= "%0.2f" % @experiment.videoclip.fpss.to_f %>"></input></td></tr>
+        <tr> <td>Frame Skip</td><td> <input id="skip-distance" type=textbox value=1>  </input></td></tr>
+      </table>
+      <table class=table>
+        <tr>
+          <th colspan=3>Objects</th>
+        </tr>
+        <tr>
+          <td colspan=2><%= select("particle","particle_id", @experiment.particles.collect {|p| [p.name, p.id]}, {:class => 'input-small'}) %></td>
+          <td><button type=button id="edit-particle" class="btn btn-primary">Edit</button></td>
+        </tr>
+        <tr>
+          <td><button type=button id="particle-data-csv" class="btn btn-primary">Export</button></td>
+          <td><button type=button id="particle-data" class="btn btn-primary">Table</button></td>
+          <td><%= link_to 'Plot', plot_experiment_path(@experiment), :class => 'btn btn-primary' %></td>
+        </tr>
+        <tr><td colspan=3><%= link_to 'New', new_experiment_particle_path(@experiment), :class => 'btn btn-primary' %></td></tr>
+      </table>
     </div>
 
     <div class="span9" id="clicker"> 
-      <canvas id="imgbox"></canvas> 
+      <div id="control-panel-row">
+        <table>
+          <tr>
+            <td><i>Frame</i></td>
+            <td></i>Time</i></td>
+            <td rowspan=2>
+              <button type=button class=btn id="control-start" onclick="load_start_frame();">start</button>||
+              <button type=button class="btn btn-primary" id="control-previous-skip" onclick="load_previous_frame_skip();" > &lt; &lt; </button>
+              <button type=button class=btn               id="control-previous"      onclick="load_previous_frame_first();"> &lt; </button>
+              <button type=button class=btn               id="control-next"          onclick="load_next_frame_first();"    > &gt; </button>
+              <button type=button class="btn btn-primary" id="control-next-skip"     onclick="load_next_frame_skip();"     >  &gt; &gt; </button>
+            </td>
+          </tr>
+          <tr>
+            <td><span id="display-frame"></span></td>
+            <td><span id="display-time"></span></td>
+          </tr>
+        </table>
+      </div>
+      <canvas id="imgbox"></canvas>
     </div>
 
   </div>
@@ -92,7 +117,6 @@ $(document).ready(function() {
       $("select#particle_particle_id").attr("disabled",true);
     }
     reset_view();
-    render();
   });
 
   // do something smarter here like attaching the route into the object and look up dynamically?

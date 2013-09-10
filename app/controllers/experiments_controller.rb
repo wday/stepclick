@@ -98,6 +98,11 @@ class ExperimentsController < ApplicationController
     @experiment = Experiment.find(params[:id])
   end
 
+  # GET /experiments/1/edit_before_clicker
+  def edit_before_clicker
+    @experiment = Experiment.find(params[:id])
+  end
+
   # POST /experiments
   # POST /experiments.json
   def create
@@ -119,10 +124,14 @@ class ExperimentsController < ApplicationController
   def update
     @experiment = Experiment.find(params[:id])
 
-    if @experiment.update_attributes(params[:experiment])
-      render :inline => "<xml><status>OK</status></xml>"
-    else
-      render :inline => "<xml><status>ERROR</status></xml>"
+    respond_to do |format|
+      if @experiment.update_attributes(params[:experiment])
+        format.html { redirect_to experiment_clicker_path(@experiment) }
+        format.xml { render :inline => "<xml><status>OK</status></xml>" }
+      else
+        format.html { redirect_to '/experiments', notice: "Unable to update experiment" }
+        format.xml { render :inline => "<xml><status>ERROR</status></xml>" }
+      end
     end
 
     # respond_to do |format|

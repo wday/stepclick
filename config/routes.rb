@@ -2,6 +2,9 @@ Video::Application.routes.draw do
 
   resources :experiments do
     member do
+      get 'edit_before_clicker'
+    end
+    member do
       post 'set_scale'
     end
     member do
