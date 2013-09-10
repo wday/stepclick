@@ -128,7 +128,7 @@ class VideoclipsController < ApplicationController
     experiment.save
 
     #TODO redirect to clicker that saves data for this experiment
-    redirect_to '/experiments/' + experiment.id.to_s + '/edit'
+    redirect_to '/experiments/' + experiment.id.to_s + '/edit_before_clicker'
   end
 
   # GET /videoclips/:id/play

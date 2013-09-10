@@ -2,10 +2,16 @@ Video::Application.routes.draw do
 
   resources :experiments do
     member do
+      get 'edit_before_clicker'
+    end
+    member do
       post 'set_scale'
     end
     member do
       get 'plot'
+    end
+    member do 
+      get 'distance'
     end
     resources :particles do
       member do

@@ -30,8 +30,8 @@ class Videoclip < ActiveRecord::Base
     end
 
 		logger.info "[create_frames] processing video with ffmpeg"
-    logger.info "[create_frames] executing: ffmpeg -i #{clip_path} -qscale 0 #{frame_path}"
-    Open3.popen3('ffmpeg','-i',clip_path,'-qscale','0',frame_path) do |stdin, stdout, stderr|
+    logger.info "[create_frames] executing: ffmpeg -i #{clip_path} -qscale 0.01 #{frame_path}"
+    Open3.popen3('ffmpeg','-i',clip_path,'-qscale','0.01',frame_path) do |stdin, stdout, stderr|
       while (line = stderr.gets)
 				logger.info line.chomp
       end
@@ -40,7 +40,7 @@ class Videoclip < ActiveRecord::Base
     # TODO do this in a thread and don't block    
 
     logger.info "[create_frames] converting video to version playable in most browsers using video tag"
-    Open3.popen3('ffmpeg','-i',clip_path,'-qscale','0',clip_path + '.mp4') do |stdin, stdout, stderr|
+    Open3.popen3('ffmpeg','-i',clip_path,'-qscale','0.01',clip_path + '.mp4') do |stdin, stdout, stderr|
       while (line = stderr.gets)
         logger.info line.chomp
       end

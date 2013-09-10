@@ -5,24 +5,56 @@ class ExperimentsController < ApplicationController
     @experiment = Experiment.find params[:id]
     @particles  = @experiment.particles
     @scale      = @experiment.scale
-    @colids    = ['x','y']
-    @colors    = ['red','blue']
+    @colids     = ["x","y"]
 
     gon.experiment = @experiment
     gon.particles  = @particles
     gon.data       = @particles.first.data
     gon.particledata = []
     @particles.each do |p|
-      gon.particledata << p.data
+      gon.particledata << ::ExperimentAnalyzer.compute_normalized_position( @scale.get_scaled(p.data) )
     end
     gon.scale        = @scale
     gon.xcolid       = 'time'
-    gon.colors       = @colors
-    gon.colids       = @colids
+    gon.colors       = @particles.collect {|p| p.color_name }
     gon.particle_ids = @particles.collect {|p| "par" + p.id.to_s}
+    gon.all_colids   = @colids
+    gon.colids_json  = @experiment.colids
+    gon.colid_storage_column = 'colids' #HACK column to store selected columns in db
 
     respond_to do |format|
       format.html
+    end
+  end
+
+  # GET /experiments/:id/plot
+  def distance
+    @experiment = Experiment.find params[:id]
+    @particles  = @experiment.particles
+    @scale      = @experiment.scale
+    @colids     = ["distance"]
+
+    gon.experiment = @experiment
+    gon.particles  = @particles
+    gon.data       = @particles.first.data
+    gon.particledata = []
+    @particles.each do |p|
+      gon.particledata << ::ExperimentAnalyzer.compute_distance( @scale.get_scaled(p.data) )
+    end
+    gon.scale        = @scale
+    gon.xcolid       = 'time'
+    gon.colors       = @particles.collect {|p| p.color_name }
+    gon.particle_ids = @particles.collect {|p| "par" + p.id.to_s}
+    gon.all_colids   = @colids
+    gon.colids_json  = @experiment.distance_colids
+    gon.colid_storage_column = 'distance_colids' # HACK where to store saved column views
+    gon.plotconfig = {
+      "xlabel" => "Time",
+      "ylabel" => "Distance"
+    }
+
+    respond_to do |format|
+      format.html {render 'plot'}
     end
   end
 
@@ -66,6 +98,11 @@ class ExperimentsController < ApplicationController
     @experiment = Experiment.find(params[:id])
   end
 
+  # GET /experiments/1/edit_before_clicker
+  def edit_before_clicker
+    @experiment = Experiment.find(params[:id])
+  end
+
   # POST /experiments
   # POST /experiments.json
   def create
@@ -89,13 +126,24 @@ class ExperimentsController < ApplicationController
 
     respond_to do |format|
       if @experiment.update_attributes(params[:experiment])
-        format.html { redirect_to '/experiments/' + @experiment.id.to_s + '/clicker', notice: 'Experiment was successfully updated.' }
-        format.json { head :no_content }
+        format.html { redirect_to experiment_clicker_path(@experiment) }
+        format.xml { render :inline => "<xml><status>OK</status></xml>" }
       else
-        format.html { render action: "edit" }
-        format.json { render json: @experiment.errors, status: :unprocessable_entity }
+        format.html { redirect_to '/experiments', notice: "Unable to update experiment" }
+        format.xml { render :inline => "<xml><status>ERROR</status></xml>" }
       end
     end
+
+    # respond_to do |format|
+    #   if @experiment.update_attributes(params[:experiment])
+    #     format.html { redirect_to '/experiments/' + @experiment.id.to_s + '/clicker', notice: 'Experiment was successfully updated.' }
+    #     format.json { head :no_content }
+    #     format.xml  { head :no_content }
+    #   else
+    #     format.html { render action: "edit" }
+    #     format.json { render json: @experiment.errors, status: :unprocessable_entity }
+    #   end
+    # end
   end
 
   # DELETE /experiments/1

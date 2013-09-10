@@ -51,4 +51,4 @@ gem 'less-rails-bootstrap'
 
 gem 'gon'
 
-
+gem 'thin'
