@@ -58,7 +58,7 @@ namespace :deploy do
   		run "cd #{deploy_to}; rake assets:clean"
         # HACK since migration is generating this in the effective 'current'
         run "cd #{deploy_to}; git checkout -- db/schema.rb"
-  		run "cd #{deploy_to}; git pull -u origin bootstrap"
+  		run "cd #{deploy_to}; git pull -u origin master"
   		migrate_production
   		install_gems
   		run "cd #{deploy_to}; rake assets:precompile"
